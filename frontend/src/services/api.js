@@ -79,4 +79,25 @@ export const getFacultades = async () => {
   }
 };
 
+export const getRecursosPorSala = async (idSala) => {
+  const res = await fetch(`${API_URL}/sala-recursos/sala/${idSala}`);
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al obtener recursos de la sala');
+  }
+  return res.json();
+};
+
+export const eliminarRecursoDeSala = async ({ id_sala, id_recurso }) => {
+  const res = await fetch(`${API_URL}/sala-recursos`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_sala, id_recurso }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Error al eliminar el recurso de la sala');
+  }
+  return data;
+};
 export default api;

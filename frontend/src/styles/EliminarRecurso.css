@@ -40,6 +40,46 @@
     margin-right: 80%; /* espacio entre botones */
 }
 
-.AgregarBtn:last-child {
+.EliminarBtn:last-child {
     margin-right: 0; /* elimina margen del último */
+}
+
+.formSection {
+  flex: 1;
+  padding: 35px 45px;
+}
+
+.listaRecursos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.recursoItem {
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.recursoItem:hover {
+  background-color: #f8f8f8;
+}
+
+.recursoItem.activo {
+  border-color: #e30613;
+  background-color: #ffe6e8;
+}
+
+.sinRecursos {
+  color: #555;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.recursoNombre,
+.recursoDesc {
+  display: block;
 }
