@@ -20,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
     idSala: {
       type: DataTypes.STRING(45),
       allowNull: false
+    },
+    estado: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: 'ACTIVA'
     }
   }, {
     tableName: 'reserva',

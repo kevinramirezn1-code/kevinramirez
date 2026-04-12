@@ -8,6 +8,13 @@ class ReservaService {
 
   async listar() {
     return await Reserva.findAll({
+      where: { estado: 'ACTIVA' },
+      order: [['id', 'ASC']]
+    });
+  }
+
+  async listarTodas() {
+    return await Reserva.findAll({
       order: [['id', 'ASC']]
     });
   }
@@ -20,14 +27,25 @@ class ReservaService {
 
   async actualizar(id, data) {
     const reserva = await this.obtenerPorId(id);
+
+    if (reserva.estado === 'CANCELADA') {
+      throw new Error('No se puede actualizar una reserva cancelada');
+    }
+
     await reserva.update(data);
     return reserva;
   }
 
   async eliminar(id) {
     const reserva = await this.obtenerPorId(id);
-    await reserva.destroy();
-    return { message: 'Reserva eliminada' };
+
+    if (reserva.estado === 'CANCELADA') {
+      throw new Error('La reserva ya está cancelada');
+    }
+
+    await reserva.update({ estado: 'CANCELADA' });
+
+    return { message: 'Reserva cancelada correctamente' };
   }
 }
 

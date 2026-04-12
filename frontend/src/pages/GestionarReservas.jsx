@@ -1,18 +1,20 @@
-// GestionarReservas.jsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
-import { useAuth } from "../context/AuthContext"; // 🔥 contexto usuario
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
-import '../styles/GestionarReservas.css'; 
+import '../styles/GestionarReservas.css';
 import devolver from '../assets/images/devolver.png';
 
 function GestionarReservas() {
-  const { user } = useAuth(); // 🔥 usuario actual
+  const { user } = useAuth();
+
   const [selectedDate, setSelectedDate] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // March 2026
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2));
+
   const [showCrear, setShowCrear] = useState(false);
+  const [showEditar, setShowEditar] = useState(false);
 
   const [horaInicio, setHoraInicio] = useState("07:00 AM");
   const [horaFin, setHoraFin] = useState("07:30 AM");
@@ -20,55 +22,88 @@ function GestionarReservas() {
   const [salaSeleccionada, setSalaSeleccionada] = useState("");
 
   const [reservasDelDia, setReservasDelDia] = useState([]);
-  
+  const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
+
+  const API_URL = "http://localhost:3001/api";
+
+  const opcionesHora = Array.from({ length: 28 }, (_, i) => {
+    const h = 7 + Math.floor(i / 2);
+    const m = i % 2 === 0 ? "00" : "30";
+    const ampm = h >= 12 ? "PM" : "AM";
+    return ((h - 1) % 12 + 1) + ":" + m + " " + ampm;
+  });
+
+  const formatoHora = (hora) => {
+    const [time, ampm] = hora.split(" ");
+    let [h, m] = time.split(":").map(Number);
+
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+
+    return { h, m };
+  };
+
+  const convertirFechaAHora12 = (fecha) => {
+    const date = new Date(fecha);
+    let horas = date.getHours();
+    const minutos = date.getMinutes().toString().padStart(2, "0");
+    const ampm = horas >= 12 ? "PM" : "AM";
+
+    horas = horas % 12;
+    if (horas === 0) horas = 12;
+
+    return `${horas}:${minutos} ${ampm}`;
+  };
+
+  const cargarReservasDelDia = async (fecha) => {
+    if (!fecha) return;
+
+    try {
+      const fechaStr = fecha.toLocaleDateString('en-CA');
+      const res = await axios.get(`${API_URL}/reservas?fecha=${fechaStr}`);
+      setReservasDelDia(res.data);
+    } catch (error) {
+      console.error("Error al obtener reservas del día:", error);
+      setReservasDelDia([]);
+    }
+  };
+
   useEffect(() => {
     if (!selectedDate) return;
-
-    const fetchReservasDelDia = async () => {
-      try {
-        const fechaStr = selectedDate.toLocaleDateString('en-CA'); // ✅ FIX
-        const res = await axios.get(`http://localhost:3001/api/reservas?fecha=${fechaStr}`);
-        setReservasDelDia(res.data);
-      } catch (error) {
-        console.error("Error al obtener reservas del día:", error);
-        setReservasDelDia([]);
-      }
-    };
-
-    fetchReservasDelDia();
+    cargarReservasDelDia(selectedDate);
   }, [selectedDate]);
 
-  // 🔹 Obtener salas disponibles al montar
   useEffect(() => {
     const fetchSalas = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/salas"); // ajusta la URL
-        setSalas(res.data); // lista de salas
+        const res = await axios.get(`${API_URL}/salas`);
+        setSalas(res.data);
       } catch (error) {
         console.error("Error al obtener salas:", error);
       }
     };
+
     fetchSalas();
   }, []);
 
-  // Obtener días del mes
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const days = [];
-    
+
     const firstDayOfWeek = firstDay.getDay();
+
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const prevDate = new Date(year, month, -i);
       days.push({ date: prevDate, isCurrentMonth: false });
     }
-    
+
     for (let i = 1; i <= lastDay.getDate(); i++) {
       days.push({ date: new Date(year, month, i), isCurrentMonth: true });
     }
-    
+
     return days;
   };
 
@@ -79,77 +114,169 @@ function GestionarReservas() {
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
     setSelectedDate(null);
+    setReservaSeleccionada(null);
   };
 
   const handleNextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
     setSelectedDate(null);
+    setReservaSeleccionada(null);
   };
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
+    setReservaSeleccionada(null);
   };
 
   const isSameDate = (date1, date2) => {
     if (!date1 || !date2) return false;
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
   };
 
-  const getAvailabilityStatus = (date) => "disponible";
-  const getStatusText = (status) => "Disponible";
-  const getStatusColor = (status) => "#10b981";
-  const getStatusBackgroundColor = (status) => "#d1fae5";
+  const getAvailabilityStatus = () => "disponible";
+  const getStatusText = () => "Disponible";
+  const getStatusColor = () => "#10b981";
+  const getStatusBackgroundColor = () => "#d1fae5";
 
-  // 🔹 Crear reserva
+  const limpiarFormulario = () => {
+    setHoraInicio("07:00 AM");
+    setHoraFin("07:30 AM");
+    setSalaSeleccionada("");
+  };
+
+  const abrirModalCrear = () => {
+    if (!selectedDate) {
+      alert("Debes seleccionar un día antes de crear reserva");
+      return;
+    }
+
+    limpiarFormulario();
+    setShowCrear(true);
+  };
+
+  const abrirModalEditar = () => {
+    if (!reservaSeleccionada) {
+      alert("Debes seleccionar una reserva para ajustar");
+      return;
+    }
+
+    setHoraInicio(convertirFechaAHora12(reservaSeleccionada.fechaInicio));
+    setHoraFin(convertirFechaAHora12(reservaSeleccionada.fechaFin));
+    setSalaSeleccionada(reservaSeleccionada.idSala);
+    setShowEditar(true);
+  };
+
   const handleCrearReserva = async () => {
     if (!selectedDate) return alert("Debes seleccionar un día primero");
     if (!salaSeleccionada) return alert("Debes seleccionar una sala");
     if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
 
     try {
-      // Construir fechas completas con hora
-      const formatoHora = (hora) => {
-        const [time, ampm] = hora.split(" ");
-        let [h, m] = time.split(":").map(Number);
-        if (ampm === "PM" && h !== 12) h += 12;
-        if (ampm === "AM" && h === 12) h = 0;
-        return { h, m };
-      };
-
       const inicio = formatoHora(horaInicio);
       const fin = formatoHora(horaFin);
 
       const fechaInicio = new Date(selectedDate);
       fechaInicio.setHours(inicio.h, inicio.m, 0, 0);
+
       const fechaFin = new Date(selectedDate);
       fechaFin.setHours(fin.h, fin.m, 0, 0);
 
-      // POST al backend
-      await axios.post("http://localhost:3001/api/reservas", {
+      await axios.post(`${API_URL}/reservas`, {
         fechaInicio,
         fechaFin,
-        idUsuario: user.id, // 🔥 usuario del contexto
+        idUsuario: user.id,
         idSala: salaSeleccionada
       });
 
       alert("Reserva creada correctamente");
       setShowCrear(false);
+      limpiarFormulario();
+      await cargarReservasDelDia(selectedDate);
     } catch (error) {
       console.error("Error al crear reserva:", error);
-      alert(error.response?.data?.errores?.join("\n") || "Error al crear reserva");
+      alert(
+        error.response?.data?.error ||
+        error.response?.data?.errores?.join("\n") ||
+        "Error al crear reserva"
+      );
+    }
+  };
+
+  const handleActualizarReserva = async () => {
+    if (!reservaSeleccionada) return alert("Debes seleccionar una reserva");
+    if (!selectedDate) return alert("Debes seleccionar un día");
+    if (!salaSeleccionada) return alert("Debes seleccionar una sala");
+    if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
+
+    try {
+      const inicio = formatoHora(horaInicio);
+      const fin = formatoHora(horaFin);
+
+      const fechaInicio = new Date(selectedDate);
+      fechaInicio.setHours(inicio.h, inicio.m, 0, 0);
+
+      const fechaFin = new Date(selectedDate);
+      fechaFin.setHours(fin.h, fin.m, 0, 0);
+
+      await axios.put(`${API_URL}/reservas/${reservaSeleccionada.id}`, {
+        fechaInicio,
+        fechaFin,
+        idSala: salaSeleccionada
+      });
+
+      alert("Reserva ajustada correctamente");
+      setShowEditar(false);
+      limpiarFormulario();
+      setReservaSeleccionada(null);
+      await cargarReservasDelDia(selectedDate);
+    } catch (error) {
+      console.error("Error al ajustar reserva:", error);
+      alert(
+        error.response?.data?.error ||
+        error.response?.data?.errores?.join("\n") ||
+        "Error al ajustar reserva"
+      );
+    }
+  };
+
+  const handleCancelarReserva = async () => {
+    if (!reservaSeleccionada) {
+      alert("Debes seleccionar una reserva para cancelar");
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `¿Seguro que deseas cancelar la reserva de la sala ${reservaSeleccionada.idSala}?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`${API_URL}/reservas/${reservaSeleccionada.id}`);
+      alert("Reserva cancelada correctamente");
+      setReservaSeleccionada(null);
+      await cargarReservasDelDia(selectedDate);
+    } catch (error) {
+      console.error("Error al cancelar reserva:", error);
+      alert(
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Error al cancelar reserva"
+      );
     }
   };
 
   return (
     <div className="grContainer">
       <NavbarGestionSalas userRole={user?.rol || ""} />
-      
+
       <div className="grContent">
         <div className="threeColumnLayout">
 
-          {/* Columna izquierda */}
           <div className="leftColumnSelected">
             <div className="selectedDateCard">
               <h3 className="selectedDateTitle">Fecha Seleccionada</h3>
@@ -160,11 +287,16 @@ function GestionarReservas() {
                   </div>
                   <div className="selectedDateDetails">
                     <p className="selectedDateFull">
-                      {selectedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      {selectedDate.toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
                     </p>
-                    <div 
+                    <div
                       className="selectedDateStatus"
-                      style={{ 
+                      style={{
                         backgroundColor: getStatusBackgroundColor(getAvailabilityStatus(selectedDate)),
                         color: getStatusColor(getAvailabilityStatus(selectedDate))
                       }}
@@ -180,27 +312,46 @@ function GestionarReservas() {
                 </div>
               )}
             </div>
-              <div className="secondaryCard">
-                <h4>Reservas del {selectedDate?.toLocaleDateString()}</h4>
-                {reservasDelDia.length === 0 ? (
-                  <p>No hay reservas para este día</p>
-                ) : (
-                  <ul className="reservasList">
-                    {reservasDelDia.map((reserva) => (
-                     <li key={reserva.id}>
-                        <span><strong> {reserva.idSala}</strong></span>
-                        <span>
-                          {new Date(reserva.fechaInicio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -  
-                          {new Date(reserva.fechaFin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+
+            <div className="secondaryCard">
+              <h4>Reservas del {selectedDate?.toLocaleDateString()}</h4>
+
+              {!selectedDate ? (
+                <p>Selecciona un día para ver las reservas</p>
+              ) : reservasDelDia.length === 0 ? (
+                <p>No hay reservas para este día</p>
+              ) : (
+                <ul className="reservasList">
+                  {reservasDelDia.map((reserva) => (
+                    <li
+                      key={reserva.id}
+                      onClick={() => setReservaSeleccionada(reserva)}
+                      className={`reservaItem ${reservaSeleccionada?.id === reserva.id ? "reservaSeleccionada" : ""}`}
+                      style={{
+                        cursor: "pointer",
+                        border: reservaSeleccionada?.id === reserva.id
+                          ? "2px solid #3b82f6"
+                          : "1px solid transparent"
+                      }}
+                    >
+                      <span><strong>{reserva.idSala}</strong></span>
+                      <span>
+                        {new Date(reserva.fechaInicio).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })} -{" "}
+                        {new Date(reserva.fechaFin).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
-          {/* Columna central - Calendario */}
           <div className="centerColumn">
             <div className="calendarContainerSmall">
               <div className="calendarHeaderSmall">
@@ -208,18 +359,21 @@ function GestionarReservas() {
                 <h3>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h3>
                 <button className="monthNavBtnSmall" onClick={handleNextMonth}>→</button>
               </div>
-              
+
               <div className="calendarWeekDaysSmall">
-                {dayNames.map(day => <div key={day} className="weekDaySmall">{day}</div>)}
+                {dayNames.map(day => (
+                  <div key={day} className="weekDaySmall">{day}</div>
+                ))}
               </div>
-              
+
               <div className="calendarDaysSmall">
                 {days.map((day, index) => {
                   const isSelected = selectedDate && isSameDate(day.date, selectedDate);
+
                   return (
-                    <div 
+                    <div
                       key={index}
-                      className={`calendarDaySmall ${!day.isCurrentMonth ? "otherMonthSmall" : ""} 
+                      className={`calendarDaySmall ${!day.isCurrentMonth ? "otherMonthSmall" : ""}
                         ${isSelected ? "selectedSmall" : ""} ${day.isCurrentMonth ? "clickableSmall" : ""}`}
                       onClick={() => day.isCurrentMonth && handleDateClick(day.date)}
                     >
@@ -231,23 +385,30 @@ function GestionarReservas() {
             </div>
           </div>
 
-          {/* Columna derecha */}
           <div className="rightColumn">
             <div className="buttonsVertical">
-              <button 
+              <button
                 className="reservaBtnVertical crearBtn"
-                onClick={() => {
-                  if (!selectedDate) return alert("Debes seleccionar un día antes de crear reserva");
-                  setShowCrear(true);
-                }}
+                onClick={abrirModalCrear}
               >
                 Crear
               </button>
-              <button className="reservaBtnVertical ajustarBtn">Ajustar</button>
-              <button className="reservaBtnVertical cancelarBtn">Cancelar</button>
+
+              <button
+                className="reservaBtnVertical ajustarBtn"
+                onClick={abrirModalEditar}
+              >
+                Ajustar
+              </button>
+
+              <button
+                className="reservaBtnVertical cancelarBtn"
+                onClick={handleCancelarReserva}
+              >
+                Cancelar
+              </button>
             </div>
 
-            {/* Leyenda */}
             <div className="legendContainer">
               <h4 className="legendTitle">Estado</h4>
               <div className="legendItems">
@@ -261,37 +422,27 @@ function GestionarReservas() {
         </div>
       </div>
 
-      {/* Modal Crear Reserva */}
       {showCrear && (
         <div className="modalOverlay">
           <div className="modalBox">
             <h3>Crear Reserva</h3>
 
             <div className="modalField">
-
               <div className="fieldRow">
                 <label>Hora Inicio:</label>
                 <select value={horaInicio} onChange={e => setHoraInicio(e.target.value)}>
-                  {Array.from({length: 28}, (_, i) => {
-                    const h = 7 + Math.floor(i/2);
-                    const m = i % 2 === 0 ? "00" : "30";
-                    const ampm = h >= 12 ? "PM" : "AM";
-                    const hora = ((h-1)%12+1) + ":" + m + " " + ampm;
-                    return <option key={i}>{hora}</option>;
-                  })}
+                  {opcionesHora.map((hora, i) => (
+                    <option key={i} value={hora}>{hora}</option>
+                  ))}
                 </select>
               </div>
 
               <div className="fieldRow">
                 <label>Hora Fin:</label>
                 <select value={horaFin} onChange={e => setHoraFin(e.target.value)}>
-                  {Array.from({length: 28}, (_, i) => {
-                    const h = 7 + Math.floor(i/2);
-                    const m = i % 2 === 0 ? "00" : "30";
-                    const ampm = h >= 12 ? "PM" : "AM";
-                    const hora = ((h-1)%12+1) + ":" + m + " " + ampm;
-                    return <option key={i}>{hora}</option>;
-                  })}
+                  {opcionesHora.map((hora, i) => (
+                    <option key={i} value={hora}>{hora}</option>
+                  ))}
                 </select>
               </div>
 
@@ -299,23 +450,84 @@ function GestionarReservas() {
                 <label>Sala:</label>
                 <select value={salaSeleccionada} onChange={e => setSalaSeleccionada(e.target.value)}>
                   <option value="">-- Selecciona sala --</option>
-                  {salas.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                  {salas.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre || s.id}
+                    </option>
+                  ))}
                 </select>
               </div>
-
             </div>
 
             <button className="modalPrimaryBtn" onClick={handleCrearReserva}>Crear</button>
-            <button className="modalCloseBtn" onClick={() => setShowCrear(false)}>Cerrar</button>
+            <button
+              className="modalCloseBtn"
+              onClick={() => {
+                setShowCrear(false);
+                limpiarFormulario();
+              }}
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}
 
-      {/* FOOTER */}
+      {showEditar && (
+        <div className="modalOverlay">
+          <div className="modalBox">
+            <h3>Ajustar Reserva</h3>
+
+            <div className="modalField">
+              <div className="fieldRow">
+                <label>Hora Inicio:</label>
+                <select value={horaInicio} onChange={e => setHoraInicio(e.target.value)}>
+                  {opcionesHora.map((hora, i) => (
+                    <option key={i} value={hora}>{hora}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="fieldRow">
+                <label>Hora Fin:</label>
+                <select value={horaFin} onChange={e => setHoraFin(e.target.value)}>
+                  {opcionesHora.map((hora, i) => (
+                    <option key={i} value={hora}>{hora}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="fieldRow">
+                <label>Sala:</label>
+                <select value={salaSeleccionada} onChange={e => setSalaSeleccionada(e.target.value)}>
+                  <option value="">-- Selecciona sala --</option>
+                  {salas.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre || s.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <button className="modalPrimaryBtn" onClick={handleActualizarReserva}>Guardar cambios</button>
+            <button
+              className="modalCloseBtn"
+              onClick={() => {
+                setShowEditar(false);
+                limpiarFormulario();
+              }}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="footergr">
-        <Link to="/Secretaria"> 
+        <Link to="/Secretaria">
           <img src={devolver} alt="devolver" className="devolvergr" />
-        </Link>    
+        </Link>
       </div>
     </div>
   );

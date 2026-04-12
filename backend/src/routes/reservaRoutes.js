@@ -14,7 +14,7 @@ const validar = (req, res, next) => {
 // 🔹 CREAR
 router.post('/', reservaController.crear);
 
-// 🔹 LISTAR (MANEJA TODO: con o sin fecha)
+// 🔹 LISTAR (CON O SIN FECHA)
 router.get('/', reservaController.listar);
 
 // 🔹 OBTENER POR ID
@@ -24,18 +24,18 @@ router.get('/:id',
   reservaController.obtenerPorId
 );
 
-// 🔹 ACTUALIZAR
+// 🔹 ACTUALIZAR 
 router.put('/:id',
   param('id').isInt(),
   validar,
   reservaController.actualizar
 );
 
-// 🔹 ELIMINAR
+// 🔹 CANCELAR 
 router.delete('/:id',
   param('id').isInt(),
   validar,
-  reservaController.eliminar
+  reservaController.cancelar
 );
 
 module.exports = router;

@@ -1,11 +1,11 @@
 class ReservaDTO {
-
-  constructor({ id, fechaInicio, fechaFin, idUsuario, idSala }) {
+  constructor({ id, fechaInicio, fechaFin, idUsuario, idSala, estado }) {
     this.id = id;
     this.fechaInicio = fechaInicio;
     this.fechaFin = fechaFin;
     this.idUsuario = idUsuario;
     this.idSala = idSala;
+    this.estado = estado;
   }
 
   static validarCrear(data) {
@@ -24,7 +24,7 @@ class ReservaDTO {
       errors.push('La sala es obligatoria');
     }
 
-    // 🔥 validación lógica
+    // validación lógica de fechas
     if (data.fechaInicio && data.fechaFin) {
       if (new Date(data.fechaFin) <= new Date(data.fechaInicio)) {
         errors.push('La fecha fin debe ser mayor a la fecha inicio');
@@ -39,6 +39,19 @@ class ReservaDTO {
 
     if (!data || Object.keys(data).length === 0) {
       errors.push('Debe enviar al menos un campo');
+      return errors;
+    }
+
+    // validar fechas si vienen
+    if (data.fechaInicio && data.fechaFin) {
+      if (new Date(data.fechaFin) <= new Date(data.fechaInicio)) {
+        errors.push('La fecha fin debe ser mayor a la fecha inicio');
+      }
+    }
+
+    // validar idUsuario si viene
+    if (data.idUsuario && isNaN(data.idUsuario)) {
+      errors.push('El idUsuario debe ser numérico');
     }
 
     return errors;
