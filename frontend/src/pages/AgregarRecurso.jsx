@@ -158,7 +158,7 @@ function AgregarRecurso() {
         <div className="formSection">
           <h1>
             {salaSeleccionada
-              ? `Recursos Sala N° ${salaSeleccionada.id}`
+              ? `Recursos ${salaSeleccionada.id}`
               : "Selecciona una sala"}
           </h1>
 
@@ -203,7 +203,7 @@ function AgregarRecurso() {
                       className="recursoItem"
                       onClick={() => seleccionarSala(sala)}
                     >
-                      <span className="recursoNombre">Sala N° {sala.id}</span>
+                      <span className="recursoNombre">{sala.id}</span>
                       <span className="recursoDesc">
                         Nombre: {sala.nombre}
                       </span>

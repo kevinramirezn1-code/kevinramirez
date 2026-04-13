@@ -127,7 +127,7 @@ function EliminarRecurso() {
 
               <button
                 type="button"
-                className="EliminarBtn"
+                className="volverSalasBtn"
                 onClick={() => {
                   setSalaSeleccionada(null);
                   setRecursosSala([]);
@@ -155,7 +155,7 @@ function EliminarRecurso() {
                       onClick={() => seleccionarSala(sala)}
                     >
                       <span className="recursoNombre">
-                        Sala N° {sala.id}
+                        {sala.id}
                       </span>
                       <span className="recursoDesc">
                         {sala.nombre}
@@ -180,7 +180,7 @@ function EliminarRecurso() {
           onClick={handleEliminar}
           disabled={!salaSeleccionada || !recursoSeleccionado || cargando}
         >
-          {cargando ? "Procesando..." : "Eliminar recurso de sala"}
+          {cargando ? "Procesando..." : "Eliminar"}
         </button>
       </FooterRojo>
     </div>

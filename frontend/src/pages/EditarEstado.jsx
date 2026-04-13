@@ -63,7 +63,7 @@ function EditarEstado() {
 
         {/* IZQUIERDA */}
         <div className="formSection">
-          <h2>Sala N° {salaSeleccionada?.id || ""}</h2>
+          <h2>{salaSeleccionada?.id || ""}</h2>
 
           <div className="formGroup">
             <label>Estado:</label>
