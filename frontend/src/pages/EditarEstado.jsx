@@ -9,10 +9,15 @@ function EditarEstado() {
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
   const [estado, setEstado] = useState("");
 
-  // 🔥 FUNCIÓN PARA TRAER SALAS
+  // 🔥 FUNCIÓN PARA TRAER SALAS (FILTRADAS POR BACKEND)
   const obtenerSalas = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/salas");
+      const res = await axios.get(
+        "http://localhost:3001/api/salas",
+        {
+          withCredentials: true // 🔥 CLAVE PARA SESIÓN
+        }
+      );
       setSalas(res.data);
     } catch (err) {
       console.error(err);
@@ -32,12 +37,23 @@ function EditarEstado() {
 
   // 🔹 Actualizar estado
   const actualizarEstado = async () => {
-    if (!salaSeleccionada) return alert("Selecciona una sala");
+    if (!salaSeleccionada) {
+      alert("Selecciona una sala");
+      return;
+    }
+
+    if (!estado) {
+      alert("Selecciona un estado");
+      return;
+    }
 
     try {
       await axios.put(
         `http://localhost:3001/api/salas/${salaSeleccionada.id}`,
-        { estado: estado.toLowerCase() }
+        { estado: estado.toLowerCase() },
+        {
+          withCredentials: true // 🔥 CLAVE PARA SESIÓN
+        }
       );
 
       alert("Estado actualizado ✅");
@@ -45,7 +61,7 @@ function EditarEstado() {
       // 🔥 refrescar lista
       await obtenerSalas();
 
-      // limpiar selección
+      // 🔥 limpiar selección
       setSalaSeleccionada(null);
       setEstado("");
 
@@ -94,7 +110,9 @@ function EditarEstado() {
             salas.map((sala) => (
               <div
                 key={sala.id}
-                className={`salaItem ${salaSeleccionada?.id === sala.id ? "active" : ""}`}
+                className={`salaItem ${
+                  salaSeleccionada?.id === sala.id ? "active" : ""
+                }`}
                 onClick={() => seleccionarSala(sala)}
               >
                 <p><strong>{sala.id}</strong></p>

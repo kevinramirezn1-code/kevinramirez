@@ -43,6 +43,18 @@
     margin-right: 0; /* elimina margen del último */
 }
 
+.volverBtn{
+  background: #e30613;
+    border: none;
+    padding: 10px 25px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    color: white;
+    margin-left: 40%;
+    margin-top: 20px;
+}
+
 /* ===== MENSAJES ===== */
 .mensaje {
   margin: 10px auto;

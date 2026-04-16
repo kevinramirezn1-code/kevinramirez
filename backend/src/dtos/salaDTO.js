@@ -36,29 +36,19 @@ class SalaDTO {
 
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('El nombre es obligatorio');
-    } else if (!this.esTextoValido(data.nombre)) {
-      errors.push('El nombre debe tener al menos una letra y solo puede contener letras, números y guiones');
     }
 
     if (!data.ubicacion || data.ubicacion.trim() === '') {
       errors.push('La ubicación es obligatoria');
-    } else if (!this.esTextoValido(data.ubicacion)) {
-      errors.push('La ubicación debe tener al menos una letra y solo puede contener letras, números y guiones');
     }
 
     if (data.capacidad == null) {
       errors.push('La capacidad es obligatoria');
-    } else if (!Number.isInteger(Number(data.capacidad))) {
-      errors.push('La capacidad debe ser entero');
     }
 
     if (!data.estado) errors.push('El estado es obligatorio');
 
-    if (data.facultad_id == null) {
-      errors.push('facultad_id es obligatorio');
-    } else if (!Number.isInteger(Number(data.facultad_id))) {
-      errors.push('facultad_id debe ser entero');
-    }
+    // ❌ ELIMINADO facultad_id
 
     return errors;
   }
@@ -91,22 +81,24 @@ class SalaDTO {
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('Nombre requerido');
     } else if (!this.esTextoValido(data.nombre)) {
-      errors.push('El nombre debe tener al menos una letra y solo puede contener letras, números y guiones');
+      errors.push('El nombre es inválido');
     }
 
     if (!data.ubicacion || data.ubicacion.trim() === '') {
       errors.push('Ubicación requerida');
     } else if (!this.esTextoValido(data.ubicacion)) {
-      errors.push('La ubicación debe tener al menos una letra y solo puede contener letras, números y guiones');
+      errors.push('Ubicación inválida');
     }
 
-    if (!data.capacidad || !Number.isInteger(Number(data.capacidad)) || Number(data.capacidad) <= 0) {
+    if (
+      data.capacidad == null ||
+      !Number.isInteger(Number(data.capacidad)) ||
+      Number(data.capacidad) <= 0
+    ) {
       errors.push('Capacidad inválida');
     }
 
-    if (!data.facultad_id || !Number.isInteger(Number(data.facultad_id)) || Number(data.facultad_id) <= 0) {
-      errors.push('Facultad requerida');
-    }
+    // ❌ ELIMINADO facultad_id COMPLETAMENTE
 
     return errors;
   }

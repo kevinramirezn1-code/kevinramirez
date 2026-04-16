@@ -3,11 +3,6 @@ const { Sala } = require('../models');
 class SalaService {
 
   async crear(data) {
-
-    if (!data.facultad_id) {
-      throw new Error('facultad_id es obligatorio');
-    }
-
     return await Sala.create({
       id: data.id,
       nombre: data.nombre,
@@ -18,8 +13,9 @@ class SalaService {
     });
   }
 
-  async listar() {
+  async listarPorFacultad(facultad_id) {
     return await Sala.findAll({
+      where: { facultad_id },
       order: [['id', 'ASC']]
     });
   }
@@ -37,10 +33,8 @@ class SalaService {
       nombre: data.nombre ?? sala.nombre,
       ubicacion: data.ubicacion ?? sala.ubicacion,
       capacidad: data.capacidad ? Number(data.capacidad) : sala.capacidad,
-      estado: data.estado ?? sala.estado,
-      facultad_id: data.facultad_id
-        ? Number(data.facultad_id)
-        : sala.facultad_id
+      estado: data.estado ?? sala.estado
+      // ❌ facultad NO se toca
     });
 
     return sala;

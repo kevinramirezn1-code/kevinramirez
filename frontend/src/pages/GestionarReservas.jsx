@@ -76,8 +76,11 @@ function GestionarReservas() {
   useEffect(() => {
     const fetchSalas = async () => {
       try {
-        const res = await axios.get(`${API_URL}/salas`);
-        setSalas(res.data);
+        const res = await axios.get(`${API_URL}/salas`, {
+          withCredentials: true // 🔥 ESTO ES LO QUE TE FALTA
+        });
+
+        setSalas(res.data); // 🔥 ya vienen filtradas desde backend
       } catch (error) {
         console.error("Error al obtener salas:", error);
       }

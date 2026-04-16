@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import NavbarGestionSalas from "../components/NavbarGestionSalas";
 import "../styles/crearSala.css";
-import { getFacultades } from '../services/api';
 import FooterRojo from "../components/FooterRojo";
 
 function CrearSala() {
@@ -15,32 +14,19 @@ function CrearSala() {
   });
 
   const [salas, setSalas] = useState([]);
-  const [facultades, setFacultades] = useState([]);
-  const [idFacultad, setIdFacultad] = useState("");
 
-  // 🔥 OBTENER SALAS
+  // 🔥 OBTENER SALAS (ya filtradas por backend)
   const obtenerSalas = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/salas");
+      const response = await fetch("http://localhost:3001/api/salas", {
+        credentials: "include" // 🔥 IMPORTANTE (sesión)
+      });
       const data = await response.json();
       setSalas(data);
     } catch (error) {
       console.error(error);
     }
   };
-
-  // 🔥 OBTENER FACULTADES
-  useEffect(() => {
-    const fetchFacultades = async () => {
-      try {
-        const data = await getFacultades();
-        setFacultades(data);
-      } catch (err) {
-        console.error("Error cargando facultades", err);
-      }
-    };
-    fetchFacultades();
-  }, []);
 
   // 🔥 CARGAR SALAS
   useEffect(() => {
@@ -50,7 +36,7 @@ function CrearSala() {
   // 🔥 CREAR SALA
   const crearSala = async () => {
 
-    if (!sala.id || !sala.nombre || !sala.ubicacion || !sala.capacidad || !idFacultad) {
+    if (!sala.id || !sala.nombre || !sala.ubicacion || !sala.capacidad) {
       alert("Todos los campos son obligatorios");
       return;
     }
@@ -58,6 +44,7 @@ function CrearSala() {
     try {
       const response = await fetch("http://localhost:3001/api/salas", {
         method: "POST",
+        credentials: "include", // 🔥 CLAVE PARA SESIÓN
         headers: {
           "Content-Type": "application/json"
         },
@@ -66,8 +53,8 @@ function CrearSala() {
           nombre: sala.nombre,
           ubicacion: sala.ubicacion,
           capacidad: Number(sala.capacidad),
-          estado: sala.estado.toLowerCase(),
-          facultad_id: Number(idFacultad) // 🔥 FIX FINAL
+          estado: sala.estado.toLowerCase()
+          // ❌ SIN facultad_id
         })
       });
 
@@ -90,8 +77,6 @@ function CrearSala() {
         capacidad: "",
         estado: "disponible"
       });
-
-      setIdFacultad("");
 
     } catch (error) {
       console.error(error);
@@ -156,21 +141,7 @@ function CrearSala() {
             </select>
           </div>
 
-          {/* 🔥 FACULTAD */}
-          <div className="formGroup">
-            <label>Facultad:</label>
-            <select
-              value={idFacultad}
-              onChange={(e) => setIdFacultad(e.target.value)}
-            >
-              <option value="">Selecciona una facultad</option>
-              {facultades.map((fac) => (
-                <option key={fac.id} value={fac.id}>
-                  {fac.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* ❌ ELIMINADO SELECT DE FACULTAD */}
 
           <button className="crearBtn" onClick={crearSala}>
             Crear

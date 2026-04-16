@@ -7,7 +7,9 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
 // ── Funciones de API ──────────────────────────────────────────────
 const listarRecursos = async () => {
-  const res = await fetch(`${API_URL}/recursos`);
+  const res = await fetch(`${API_URL}/recursos`, {
+    credentials: "include"
+  });
   if (!res.ok) {
     throw new Error("Error al listar recursos");
   }
@@ -15,7 +17,9 @@ const listarRecursos = async () => {
 };
 
 const listarSalas = async () => {
-  const res = await fetch(`${API_URL}/salas`);
+  const res = await fetch(`${API_URL}/salas`, {
+    credentials: "include" // 🔥 CLAVE
+  });
   if (!res.ok) {
     throw new Error("Error al listar salas");
   }
@@ -23,7 +27,9 @@ const listarSalas = async () => {
 };
 
 const listarRecursosPorSala = async (idSala) => {
-  const res = await fetch(`${API_URL}/sala-recursos/sala/${idSala}`);
+  const res = await fetch(`${API_URL}/sala-recursos/sala/${idSala}`, {
+    credentials: "include" // 🔥 CLAVE
+  });
   if (!res.ok) {
     throw new Error("Error al listar recursos de la sala");
   }
@@ -33,6 +39,7 @@ const listarRecursosPorSala = async (idSala) => {
 const agregarRecursoASala = async (data) => {
   const res = await fetch(`${API_URL}/sala-recursos`, {
     method: "POST",
+    credentials: "include", // 🔥 CLAVE
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
@@ -67,7 +74,7 @@ function AgregarRecurso() {
   const fetchSalas = async () => {
     try {
       const data = await listarSalas();
-      setSalas(data);
+      setSalas(data); // 🔥 YA VIENEN FILTRADAS POR FACULTAD
     } catch (err) {
       mostrarMensaje(err.message, "error");
     }
@@ -251,7 +258,7 @@ function AgregarRecurso() {
 
               <button
                 type="button"
-                className="AgregarBtn"
+                className="volverBtn"
                 onClick={() => {
                   setSalaSeleccionada(null);
                   setRecursosSala([]);
@@ -269,16 +276,17 @@ function AgregarRecurso() {
         </div>
       </div>
 
-        <FooterRojo>
-          {salaSeleccionada && (
+      <FooterRojo>
+        {salaSeleccionada && (
           <button
             className="AgregarBtn"
             onClick={handleAgregar}
             disabled={cargando}
           >
             {cargando ? "Guardando..." : "Agregar"}
-          </button>)}
-        </FooterRojo>
+          </button>
+        )}
+      </FooterRojo>
     </div>
   );
 }

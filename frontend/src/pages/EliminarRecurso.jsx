@@ -21,12 +21,15 @@ function EliminarRecurso() {
     setTimeout(() => setMensaje({ texto: "", tipo: "" }), 3000);
   };
 
-  // 🔥 IGUAL QUE EN CREAR SALA
+  // 🔥 CORREGIDO: ahora envía sesión
   const obtenerSalas = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/salas");
+      const res = await fetch("http://localhost:3001/api/salas", {
+        credentials: "include" // 🔥 CLAVE
+      });
+
       const data = await res.json();
-      setSalas(data);
+      setSalas(data); // 🔥 ya vienen filtradas por facultad
     } catch (error) {
       mostrarMensaje("Error al obtener salas", "error");
     }
@@ -69,6 +72,7 @@ function EliminarRecurso() {
       mostrarMensaje("Recurso inactivado correctamente.", "exito");
       setRecursoSeleccionado(null);
       await fetchRecursosSala(salaSeleccionada.id);
+
     } catch (err) {
       mostrarMensaje(err.message, "error");
     } finally {

@@ -16,9 +16,10 @@ exports.crear = async (req, res, next) => {
       nombre,
       ubicacion,
       capacidad,
-      estado,
-      facultad_id
+      estado
     } = req.body;
+
+    const facultad_id = req.user.idFacultad; // 🔥 CLAVE
 
     const salaExistente = await Sala.findByPk(id);
     if (salaExistente) {
@@ -43,10 +44,13 @@ exports.crear = async (req, res, next) => {
   }
 };
 
-// 🔹 LISTAR
+// 🔹 LISTAR (solo su facultad)
 exports.listar = async (req, res, next) => {
   try {
-    const salas = await salaService.listar();
+    const facultad_id = req.user.idFacultad;
+
+    const salas = await salaService.listarPorFacultad(facultad_id);
+
     res.json(salas.map(s => new SalaDTO(s)));
   } catch (error) {
     next(error);
@@ -57,6 +61,12 @@ exports.listar = async (req, res, next) => {
 exports.obtenerPorId = async (req, res, next) => {
   try {
     const sala = await salaService.obtenerPorId(req.params.id);
+
+    // 🔥 VALIDAR MISMA FACULTAD
+    if (sala.facultad_id !== req.user.idFacultad) {
+      return res.status(403).json({ error: 'No tienes acceso a esta sala' });
+    }
+
     res.json(new SalaDTO(sala));
   } catch (error) {
     next(error);
@@ -71,8 +81,15 @@ exports.actualizar = async (req, res, next) => {
       return res.status(400).json({ errores: errors });
     }
 
-    const sala = await salaService.actualizar(req.params.id, req.body);
-    res.json(new SalaDTO(sala));
+    const sala = await salaService.obtenerPorId(req.params.id);
+
+    if (sala.facultad_id !== req.user.idFacultad) {
+      return res.status(403).json({ error: 'No tienes acceso' });
+    }
+
+    const updated = await salaService.actualizar(req.params.id, req.body);
+
+    res.json(new SalaDTO(updated));
 
   } catch (error) {
     next(error);
@@ -87,8 +104,15 @@ exports.actualizarDatos = async (req, res, next) => {
       return res.status(400).json({ errores: errors });
     }
 
-    const sala = await salaService.actualizar(req.params.id, req.body);
-    res.json(new SalaDTO(sala));
+    const sala = await salaService.obtenerPorId(req.params.id);
+
+    if (sala.facultad_id !== req.user.idFacultad) {
+      return res.status(403).json({ error: 'No tienes acceso' });
+    }
+
+    const updated = await salaService.actualizar(req.params.id, req.body);
+
+    res.json(new SalaDTO(updated));
 
   } catch (error) {
     next(error);
@@ -98,7 +122,14 @@ exports.actualizarDatos = async (req, res, next) => {
 // 🔹 ELIMINAR
 exports.eliminar = async (req, res, next) => {
   try {
+    const sala = await salaService.obtenerPorId(req.params.id);
+
+    if (sala.facultad_id !== req.user.idFacultad) {
+      return res.status(403).json({ error: 'No tienes acceso' });
+    }
+
     await salaService.eliminar(req.params.id);
+
     res.json({ mensaje: 'Sala eliminada correctamente' });
   } catch (error) {
     next(error);
