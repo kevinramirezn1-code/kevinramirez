@@ -20,7 +20,7 @@ const InicioSecretaria = () => {
         <div className="gestionarSalasContainer">
           <div className="gestionar">
             <p className="gestionarTitle">Gestionar salas</p>
-            <Link to="/inicio/GSInicio"> <img src={gestionarSalas} alt="Gestionar salas" className="gestionarImage" /></Link>
+            <Link to="/inicio/GestionarSala"> <img src={gestionarSalas} alt="Gestionar salas" className="gestionarImage" /></Link>
         </div>
 
           <div className="gestionar">

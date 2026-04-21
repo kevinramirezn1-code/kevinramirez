@@ -44,5 +44,6 @@ exports.eliminar = async (req, res, next) => {
     res.json(resultado);
   } catch (error) {
     next(error);
+    console.log("Hola")
   }
 };

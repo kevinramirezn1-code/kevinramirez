@@ -36,6 +36,8 @@ class SalaDTO {
 
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('El nombre es obligatorio');
+    } else if (!this.esTextoValido(data.nombre)) {
+      errors.push('El nombre solo puede contener letras y espacios');
     }
 
     if (!data.ubicacion || data.ubicacion.trim() === '') {
@@ -47,8 +49,6 @@ class SalaDTO {
     }
 
     if (!data.estado) errors.push('El estado es obligatorio');
-
-    // ❌ ELIMINADO facultad_id
 
     return errors;
   }

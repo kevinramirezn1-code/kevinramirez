@@ -5,13 +5,8 @@ import Login from '../pages/Login';
 import Signup from '../pages/Signup';
 import InicioDocente from '../pages/InicioDocente';
 import InicioSecretaria from '../pages/InicioSecretaria';
-import CrearSala from '../pages/crearSala';
-import GSInicio from '../pages/GSInicio';
-import EditarSala from '../pages/EditarSala';
-import AgregarRecurso from '../pages/AgregarRecurso';
-import EditarEstado from '../pages/EditarEstado';
-import EliminarRecurso from '../pages/EliminarRecurso';
 import GestionarReservas from '../pages/GestionarReservas';
+import GestionarSalas from '../pages/GestionarSalas';
 
 const AppRouter = () => {
   const { user, loading } = useAuth();
@@ -35,28 +30,8 @@ const AppRouter = () => {
         element={user?.rol === 'secretaria' ? <InicioSecretaria /> : <Navigate to="/login" />}
       />
       <Route
-        path="/inicio/crear"
-        element={user ? <CrearSala /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/inicio/GSInicio"
-        element={user ? <GSInicio /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/inicio/editar"
-        element={user ? <EditarSala /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/inicio/AgregarRecurso"
-        element={user ? <AgregarRecurso /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/inicio/actualizarEstado"
-        element={user ? <EditarEstado /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/inicio/EliminarRecurso"
-        element={user ? <EliminarRecurso /> : <Navigate to="/login" />}
+        path="/inicio/GestionarSala"
+        element={user ? <GestionarSalas /> : <Navigate to="/login" />}
       />
       <Route
         path="/inicio/GestionarReservas"

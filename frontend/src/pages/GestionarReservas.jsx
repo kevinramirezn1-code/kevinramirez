@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-
 import '../styles/GestionarReservas.css';
 import devolver from '../assets/images/devolver.png';
 
@@ -26,12 +25,18 @@ function GestionarReservas() {
 
   const API_URL = "http://localhost:3001/api";
 
-  const opcionesHora = Array.from({ length: 28 }, (_, i) => {
-    const h = 7 + Math.floor(i / 2);
-    const m = i % 2 === 0 ? "00" : "30";
-    const ampm = h >= 12 ? "PM" : "AM";
-    return ((h - 1) % 12 + 1) + ":" + m + " " + ampm;
-  });
+  const opcionesHora = [];
+
+    for (let minutos = 7 * 60; minutos <= 21 * 60 + 30; minutos += 30) {
+      const h24 = Math.floor(minutos / 60);
+      const m = minutos % 60;
+
+      const ampm = h24 >= 12 ? "PM" : "AM";
+      let h = h24 % 12;
+      if (h === 0) h = 12;
+
+      opcionesHora.push(`${h}:${m === 0 ? "00" : "30"} ${ampm}`);
+    }
 
   const formatoHora = (hora) => {
     const [time, ampm] = hora.split(" ");
@@ -156,7 +161,10 @@ function GestionarReservas() {
       alert("Debes seleccionar un día antes de crear reserva");
       return;
     }
-
+    if (selectedDate.getDay() === 0) {
+      alert("No se pueden hacer reservas los domingos");
+      return;
+    }
     limpiarFormulario();
     setShowCrear(true);
   };
@@ -175,9 +183,12 @@ function GestionarReservas() {
 
   const handleCrearReserva = async () => {
     if (!selectedDate) return alert("Debes seleccionar un día primero");
+    if (selectedDate.getDay() === 0) {
+      return alert("No se pueden crear reservas los domingos");
+    }
     if (!salaSeleccionada) return alert("Debes seleccionar una sala");
     if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
-
+    
     try {
       const inicio = formatoHora(horaInicio);
       const fin = formatoHora(horaFin);
