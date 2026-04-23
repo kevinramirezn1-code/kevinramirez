@@ -32,20 +32,30 @@ class SalaDTO {
       return errors;
     }
 
-    if (!data.id) errors.push('El id es obligatorio');
+    if (!data.id || data.id.toString().trim() === '') {
+      errors.push('El id es obligatorio y debe tener al menos 1 carácter');
+    } else if (/^\d+$/.test(data.id.toString())) {
+      errors.push('El id no puede ser solo números');
+    }
 
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('El nombre es obligatorio');
     } else if (!this.esTextoValido(data.nombre)) {
-      errors.push('El nombre solo puede contener letras y espacios');
+      errors.push('El nombre no puede ser solo números');
     }
 
     if (!data.ubicacion || data.ubicacion.trim() === '') {
       errors.push('La ubicación es obligatoria');
+    } else if (!this.esTextoValido(data.ubicacion)) {
+      errors.push('La ubicación debe contener al menos una letra');
     }
 
-    if (data.capacidad == null) {
-      errors.push('La capacidad es obligatoria');
+    if (
+      data.capacidad == null ||
+      !Number.isInteger(Number(data.capacidad)) ||
+      Number(data.capacidad) <= 1
+    ) {
+      errors.push('La capacidad debe ser un número mayor a 1');
     }
 
     if (!data.estado) errors.push('El estado es obligatorio');
@@ -81,24 +91,22 @@ class SalaDTO {
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('Nombre requerido');
     } else if (!this.esTextoValido(data.nombre)) {
-      errors.push('El nombre es inválido');
+      errors.push('El nombre no puede ser solo números');
     }
 
     if (!data.ubicacion || data.ubicacion.trim() === '') {
       errors.push('Ubicación requerida');
     } else if (!this.esTextoValido(data.ubicacion)) {
-      errors.push('Ubicación inválida');
+      errors.push('La ubicación debe contener al menos una letra');
     }
 
     if (
       data.capacidad == null ||
       !Number.isInteger(Number(data.capacidad)) ||
-      Number(data.capacidad) <= 0
+      Number(data.capacidad) <= 1
     ) {
-      errors.push('Capacidad inválida');
+      errors.push('La capacidad debe ser un número mayor a 1');
     }
-
-    // ❌ ELIMINADO facultad_id COMPLETAMENTE
 
     return errors;
   }

@@ -19,8 +19,9 @@ exports.crear = async (req, res, next) => {
       estado
     } = req.body;
 
-    const facultad_id = req.user.idFacultad; // 🔥 CLAVE
+    const facultad_id = req.user.idFacultad;
 
+    // 🔹 Validar ID duplicado
     const salaExistente = await Sala.findByPk(id);
     if (salaExistente) {
       return res.status(400).json({
@@ -28,6 +29,21 @@ exports.crear = async (req, res, next) => {
       });
     }
 
+    // 🔹 Validar nombre duplicado
+    const salaExistenteNombre = await Sala.findOne({
+      where: {
+        nombre: nombre,
+        facultad_id: facultad_id
+      }
+    });
+
+    if (salaExistenteNombre) {
+      return res.status(400).json({
+        error: 'Ya existe una sala con ese nombre en esta facultad'
+      });
+    }
+
+    // 🔹 Crear sala (esto va FUERA del if)
     const sala = await salaService.crear({
       id,
       nombre,
@@ -106,10 +122,29 @@ exports.actualizarDatos = async (req, res, next) => {
 
     const sala = await salaService.obtenerPorId(req.params.id);
 
+    // 🔥 Validar acceso a la facultad
     if (sala.facultad_id !== req.user.idFacultad) {
       return res.status(403).json({ error: 'No tienes acceso' });
     }
 
+    const { nombre } = req.body;
+    const facultad_id = req.user.idFacultad;
+
+    // 🔥 Validar nombre duplicado (excluyendo la misma sala)
+    const salaExistenteNombre = await Sala.findOne({
+      where: {
+        nombre: nombre,
+        facultad_id: facultad_id
+      }
+    });
+
+    if (salaExistenteNombre && salaExistenteNombre.id !== req.params.id) {
+      return res.status(400).json({
+        error: 'Ya existe una sala con ese nombre en esta facultad'
+      });
+    }
+
+    // 🔥 actualizar
     const updated = await salaService.actualizar(req.params.id, req.body);
 
     res.json(new SalaDTO(updated));

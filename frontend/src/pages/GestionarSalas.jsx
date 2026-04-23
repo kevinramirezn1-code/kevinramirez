@@ -56,37 +56,70 @@ function GestionarSalas({ user }) {
       return alert("Campos obligatorios");
     }
 
-    await fetch("http://localhost:3001/api/salas", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...sala,
-        capacidad: Number(sala.capacidad),
-        estado: "disponible"
-      })
-    });
-
-    setShowModal(false);
-    obtenerSalas();
-  };
-
-  const editarInfo = async () => {
-    await fetch(
-      `http://localhost:3001/api/salas/${selectedSala.id}/datos`,
-      {
-        method: "PUT",
+    try {
+      const res = await fetch("http://localhost:3001/api/salas", {
+        method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...editForm,
-          capacidad: Number(editForm.capacidad)
+          ...sala,
+          capacidad: Number(sala.capacidad),
+          estado: "disponible"
         })
-      }
-    );
+      });
 
-    alert("Actualizado ✅");
-    obtenerSalas();
+      const data = await res.json(); // 🔥 IMPORTANTE
+
+      if (!res.ok) {
+        // ❌ ERROR DEL BACKEND
+        alert(data.error || data.errores?.join(", ") || "Error al crear sala");
+        return;
+      }
+
+      // ✅ ÉXITO
+      alert("Sala creada correctamente ✅");
+
+      setShowModal(false);
+      setSala({ id: "", nombre: "", ubicacion: "", capacidad: "" });
+      obtenerSalas();
+
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión con el servidor");
+    }
+  };
+
+  const editarInfo = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/salas/${selectedSala.id}/datos`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...editForm,
+            capacidad: Number(editForm.capacidad)
+          })
+        }
+      );
+
+      const data = await res.json(); // 🔥 LEER RESPUESTA
+
+      if (!res.ok) {
+        // ❌ ERROR DEL BACKEND
+        alert(data.error || data.errores?.join(", ") || "Error al actualizar");
+        return;
+      }
+
+      // ✅ SOLO SI TODO SALIÓ BIEN
+      alert("Actualizado ✅");
+      obtenerSalas();
+
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión con el servidor");
+    }
   };
 
   const editarEstado = async () => {
@@ -124,18 +157,33 @@ function GestionarSalas({ user }) {
       return alert("Completa todos los campos");
     }
 
-    await fetch("http://localhost:3001/api/sala-recursos", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_sala: selectedSala.id,
-        ...nuevoRecurso
-      })
-    });
+    try {
+      const res = await fetch("http://localhost:3001/api/sala-recursos", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_sala: selectedSala.id,
+          ...nuevoRecurso
+        })
+      });
 
-    setNuevoRecurso({ codigo: "", tipo: "", descripcion: "" });
-    obtenerRecursosSala(selectedSala.id);
+      const data = await res.json();
+
+      if (!res.ok) {
+        // 🔥 AQUÍ capturas errores del backend
+        alert(data.error || data.errores?.join("\n") || "Error al crear recurso");
+        return;
+      }
+
+      // ✅ éxito
+      setNuevoRecurso({ codigo: "", tipo: "", descripcion: "" });
+      obtenerRecursosSala(selectedSala.id);
+
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión con el servidor");
+    }
   };
 
   const eliminarRecurso = async (id_recurso) => {
