@@ -389,6 +389,55 @@
   cursor: pointer;
 }
 
+.consultarBtn {
+  background: #6366f1;
+  color: white;
+}
+/* CONTENEDOR */
+.disponibilidadContainer {
+  margin-top: 15px;
+}
+
+/* BARRA */
+.disponibilidadBar {
+  display: flex;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
+
+/* BLOQUES */
+.bloqueHora {
+  width: 14px;
+  height: 20px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+/* COLORES */
+.ocupado {
+  background: #ef4444;
+}
+
+.disponible {
+  background: #22c55e;
+}
+
+/* HOVER SUAVE */
+.bloqueHora:hover {
+  transform: scale(1.2);
+}
+
+/* HORAS */
+.horasLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  margin-top: 4px;
+  color: #6b7280;
+}
+
 /* FOOTER */
 .footergr {
   background: #ffffff;

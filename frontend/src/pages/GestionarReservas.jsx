@@ -15,6 +15,12 @@ function GestionarReservas() {
   const [showCrear, setShowCrear] = useState(false);
   const [showEditar, setShowEditar] = useState(false);
 
+  const [showConsultar, setShowConsultar] = useState(false);
+  const [tipoConsulta, setTipoConsulta] = useState("sala");
+  const [salaConsulta, setSalaConsulta] = useState("");
+  const [fechaConsulta, setFechaConsulta] = useState("");
+  const [disponibilidad, setDisponibilidad] = useState([]);
+
   const [horaInicio, setHoraInicio] = useState("07:00 AM");
   const [horaFin, setHoraFin] = useState("07:30 AM");
   const [salas, setSalas] = useState([]);
@@ -37,6 +43,64 @@ function GestionarReservas() {
 
       opcionesHora.push(`${h}:${m === 0 ? "00" : "30"} ${ampm}`);
     }
+  
+  const generarDisponibilidad = async () => {
+  if (!salaConsulta) return alert("Selecciona una sala");
+  if (!fechaConsulta) return alert("Selecciona una fecha");
+
+  try {
+    const res = await axios.get(
+      `${API_URL}/reservas?fecha=${fechaConsulta}`
+    );
+
+    const reservasSala = res.data.filter(
+      r => r.idSala == salaConsulta
+    );
+
+    // ✅ FIX REAL SIN DESFASE
+    const getMinutosDesdeISO = (fechaISO) => {
+      const fecha = new Date(fechaISO);
+      return fecha.getHours() * 60 + fecha.getMinutes();
+    };
+
+    const minutosAHora12 = (minutosTotales) => {
+      let h = Math.floor(minutosTotales / 60);
+      const m = minutosTotales % 60;
+
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12;
+      if (h === 0) h = 12;
+
+      return `${h}:${m === 0 ? "00" : m} ${ampm}`;
+    };
+
+    const bloques = [];
+
+    for (let minutos = 7 * 60; minutos < 21 * 60 + 30; minutos += 30) {
+
+      const inicioBloqueMin = minutos;
+      const finBloqueMin = minutos + 30;
+
+      const ocupado = reservasSala.some(r => {
+        const inicioResMin = getMinutosDesdeISO(r.fechaInicio);
+        const finResMin = getMinutosDesdeISO(r.fechaFin);
+
+        return inicioBloqueMin < finResMin && finBloqueMin > inicioResMin;
+      });
+
+      bloques.push({
+        hora: minutosAHora12(minutos),
+        estado: ocupado ? "OCUPADO" : "DISPONIBLE"
+      });
+    }
+
+    setDisponibilidad(bloques);
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al consultar disponibilidad");
+  }
+};
 
   const formatoHora = (hora) => {
     const [time, ampm] = hora.split(" ");
@@ -421,6 +485,13 @@ function GestionarReservas() {
               >
                 Cancelar
               </button>
+
+              <button
+                className="reservaBtnVertical consultarBtn"
+                onClick={() => setShowConsultar(true)}
+              >
+                Consultar
+              </button>
             </div>
 
             <div className="legendContainer">
@@ -537,6 +608,85 @@ function GestionarReservas() {
           </div>
         </div>
       )}
+
+      {showConsultar && (
+  <div className="modalOverlay">
+    <div className="modalBox">
+      <h3>Consultar Disponibilidad</h3>
+
+      <div className="modalField">
+
+        <div className="fieldRow">
+          <label>Sala</label>
+          <select
+            value={salaConsulta}
+            onChange={(e) => setSalaConsulta(e.target.value)}
+          >
+            <option value="">-- Selecciona sala --</option>
+            {salas.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre || s.id}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="fieldRow">
+          <label>Fecha</label>
+          <input
+            type="date"
+            value={fechaConsulta}
+            onChange={(e) => setFechaConsulta(e.target.value)}
+          />
+        </div>
+
+      </div>
+
+      <button className="modalPrimaryBtn" onClick={generarDisponibilidad}>
+        Consultar
+      </button>
+
+      {/* 🔥 BARRA BONITA */}
+      {disponibilidad.length > 0 && (
+        <div className="disponibilidadContainer">
+          
+          <div className="disponibilidadBar">
+            {disponibilidad.map((bloque, i) => (
+              <div
+                key={i}
+                title={`${bloque.hora} → ${bloque.estado}`}
+                className={`bloqueHora ${
+                  bloque.estado === "OCUPADO" ? "ocupado" : "disponible"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="horasLabels">
+            {disponibilidad.map((bloque, i) =>
+              i % 2 === 0 ? (
+                <span key={i}>{bloque.hora}</span>
+              ) : null
+            )}
+          </div>
+
+        </div>
+      )}
+
+      <button
+        className="modalCloseBtn"
+        onClick={() => {
+          setShowConsultar(false);
+          setDisponibilidad([]);
+          setSalaConsulta("");
+          setFechaConsulta("");
+        }}
+      >
+        Cerrar
+      </button>
+    </div>
+  </div>
+)}
 
       <div className="footergr">
         <Link to="/Secretaria">
