@@ -10,7 +10,7 @@ function GestionarReservas() {
   const { user } = useAuth();
 
   const [selectedDate, setSelectedDate] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2));
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const [showCrear, setShowCrear] = useState(false);
   const [showEditar, setShowEditar] = useState(false);
@@ -28,6 +28,9 @@ function GestionarReservas() {
 
   const [reservasDelDia, setReservasDelDia] = useState([]);
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
+
+  const [docentes, setDocentes] = useState([]);
+  const [docenteSeleccionado, setDocenteSeleccionado] = useState("");
 
   const API_URL = "http://localhost:3001/api";
 
@@ -158,6 +161,27 @@ function GestionarReservas() {
     fetchSalas();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    if (user.rol?.toLowerCase() === "secretaria") {
+      const fetchDocentes = async () => {
+        try {
+          const res = await axios.get(
+            `${API_URL}/usuarios/docentes/mis-facultad`,
+            { withCredentials: true }
+          );
+
+          setDocentes(res.data);
+        } catch (error) {
+          console.error("Error cargando docentes", error);
+        }
+      };
+
+      fetchDocentes();
+    }
+  }, [user]);
+
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -247,12 +271,24 @@ function GestionarReservas() {
 
   const handleCrearReserva = async () => {
     if (!selectedDate) return alert("Debes seleccionar un día primero");
+
     if (selectedDate.getDay() === 0) {
       return alert("No se pueden crear reservas los domingos");
     }
-    if (!salaSeleccionada) return alert("Debes seleccionar una sala");
-    if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
-    
+
+    if (!salaSeleccionada) {
+      return alert("Debes seleccionar una sala");
+    }
+
+    if (!horaInicio || !horaFin) {
+      return alert("Debes seleccionar hora inicio y fin");
+    }
+
+    // 🔥 VALIDACIÓN CLAVE
+    if (user.rol === "SECRETARIA" && !docenteSeleccionado) {
+      return alert("Debes seleccionar un docente");
+    }
+
     try {
       const inicio = formatoHora(horaInicio);
       const fin = formatoHora(horaFin);
@@ -263,17 +299,28 @@ function GestionarReservas() {
       const fechaFin = new Date(selectedDate);
       fechaFin.setHours(fin.h, fin.m, 0, 0);
 
-      await axios.post(`${API_URL}/reservas`, {
-        fechaInicio,
-        fechaFin,
-        idUsuario: user.id,
-        idSala: salaSeleccionada
-      });
+      await axios.post(
+        `${API_URL}/reservas`,
+        {
+          fechaInicio,
+          fechaFin,
+          idUsuario:
+            user.rol === "DOCENTE"
+              ? user.id
+              : docenteSeleccionado, // 🔥 aquí se asigna
+          idSala: salaSeleccionada
+        },
+        { withCredentials: true }
+      );
 
       alert("Reserva creada correctamente");
+
       setShowCrear(false);
       limpiarFormulario();
+      setDocenteSeleccionado("");
+
       await cargarReservasDelDia(selectedDate);
+
     } catch (error) {
       console.error("Error al crear reserva:", error);
       alert(
@@ -513,6 +560,7 @@ function GestionarReservas() {
             <h3>Crear Reserva</h3>
 
             <div className="modalField">
+
               <div className="fieldRow">
                 <label>Hora Inicio:</label>
                 <select value={horaInicio} onChange={e => setHoraInicio(e.target.value)}>
@@ -533,7 +581,10 @@ function GestionarReservas() {
 
               <div className="fieldRow">
                 <label>Sala:</label>
-                <select value={salaSeleccionada} onChange={e => setSalaSeleccionada(e.target.value)}>
+                <select
+                  value={salaSeleccionada}
+                  onChange={e => setSalaSeleccionada(e.target.value)}
+                >
                   <option value="">-- Selecciona sala --</option>
                   {salas.map(s => (
                     <option key={s.id} value={s.id}>
@@ -542,9 +593,31 @@ function GestionarReservas() {
                   ))}
                 </select>
               </div>
+
+              {/* 🔥 SOLO SECRETARIA VE ESTO */}
+              {user?.rol?.toLowerCase() === "secretaria" && (
+                <div className="fieldRow">
+                  <label>Docente:</label>
+                  <select
+                    value={docenteSeleccionado}
+                    onChange={(e) => setDocenteSeleccionado(e.target.value)}
+                  >
+                    <option value="">-- Selecciona docente --</option>
+                    {docentes.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.correo}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
             </div>
 
-            <button className="modalPrimaryBtn" onClick={handleCrearReserva}>Crear</button>
+            <button className="modalPrimaryBtn" onClick={handleCrearReserva}>
+              Crear
+            </button>
+
             <button
               className="modalCloseBtn"
               onClick={() => {

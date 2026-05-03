@@ -61,6 +61,16 @@ class UsuarioService {
     await usuario.destroy();
     return { message: 'Usuario eliminado' };
   }
+
+  async obtenerDocentesPorFacultad(idFacultad) {
+    return await Usuario.findAll({
+      where: {
+        rol: "DOCENTE",
+        idFacultad: idFacultad
+      },
+      attributes: ["id", "correo", "idFacultad"]
+    });
+  }
 }
 
 module.exports = new UsuarioService();

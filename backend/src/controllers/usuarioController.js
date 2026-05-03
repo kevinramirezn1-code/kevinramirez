@@ -66,6 +66,26 @@ exports.actualizar = async (req, res, next) => {
   }
 };
 
+exports.obtenerDocentesPorFacultad = async (req, res, next) => {
+  try {
+    const usuario = req.user; // 🔥 viene del middleware
+
+    // 🔐 SOLO secretaria puede usar esto
+    if (usuario.rol !== "secretaria") {
+      return res.status(403).json({ error: "No autorizado" });
+    }
+
+    const docentes = await usuarioService.obtenerDocentesPorFacultad(
+      usuario.idFacultad
+    );
+
+    res.json(docentes);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 🔹 ELIMINAR
 exports.eliminar = async (req, res, next) => {
   try {

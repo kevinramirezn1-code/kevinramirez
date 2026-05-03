@@ -16,6 +16,12 @@ router.get('/:id',
   usuarioController.obtenerPorId
 );
 
+router.get(
+  "/docentes/mis-facultad",
+  authorize("secretaria"),
+  usuarioController.obtenerDocentesPorFacultad
+);
+
 router.put('/:id',
   param('id').isInt(),
   authorize('secretaria'),

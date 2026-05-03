@@ -9,6 +9,7 @@ function Login() {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [error, setError] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -39,14 +40,23 @@ function Login() {
             onChange={(e) => setCorreo(e.target.value)}
             required
           />
+          <div className="passwordContainer">
           <input
             className="contraseña"
             placeholder="Password"
-            type="password"
+            type={mostrarPassword ? "text" : "password"}
             value={contraseña}
             onChange={(e) => setContraseña(e.target.value)}
             required
           />
+
+          <span
+            className="togglePassword"
+            onClick={() => setMostrarPassword(!mostrarPassword)}
+          >
+            {mostrarPassword ? "🙈" : "👁️"}
+          </span>
+        </div>
           {error && <p className="error-message">{error}</p>}
           <button className="ingresar" type="submit" disabled={loading}>
             {loading ? 'Cargando...' : 'Ingresar'}

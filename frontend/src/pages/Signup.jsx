@@ -38,6 +38,10 @@ function Signup() {
   const [idFacultad, setIdFacultad] = useState('');
   const [facultades, setFacultades] = useState([]);
   const [error, setError] = useState('');
+
+  // 🔥 estado para mostrar/ocultar contraseña
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+
   const { register, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -57,14 +61,12 @@ function Signup() {
     e.preventDefault();
     setError('');
 
-    // Validar dominio del correo
     const emailError = validateEmail(correo);
     if (emailError) {
       setError(emailError);
       return;
     }
 
-    // Validar contraseña
     const passwordError = validatePassword(contraseña);
     if (passwordError) {
       setError(passwordError);
@@ -87,9 +89,12 @@ function Signup() {
     <div>
       <div className="signupContainer">
         <Navbar />
+
         <div className="signupContent">
           <form onSubmit={handleSubmit} className="signup">
+
             <img src={avatar} alt="avatar" className="avatar" />
+
             <input
               className="correo"
               placeholder="Correo"
@@ -98,14 +103,26 @@ function Signup() {
               onChange={(e) => setCorreo(e.target.value)}
               required
             />
-            <input
-              className="contraseña"
-              placeholder="Contraseña"
-              type="password"
-              value={contraseña}
-              onChange={(e) => setContraseña(e.target.value)}
-              required
-            />
+
+            {/* 🔥 CONTRASEÑA CON OJITO */}
+            <div className="passwordContainer">
+              <input
+                className="contraseña"
+                placeholder="Contraseña"
+                type={mostrarPassword ? "text" : "password"}
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
+                required
+              />
+
+              <span
+                className="togglePassword"
+                onClick={() => setMostrarPassword(!mostrarPassword)}
+              >
+                {mostrarPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
+
             <select
               className="facultades"
               value={idFacultad}
@@ -125,6 +142,7 @@ function Signup() {
             <button className="ingresar" type="submit" disabled={loading}>
               {loading ? 'Registrando...' : 'Registrarse'}
             </button>
+
           </form>
         </div>
       </div>
