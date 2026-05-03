@@ -17,7 +17,7 @@
   align-items: flex-start;   /* centrado vertical */
   justify-content: center; /* centrado horizontal */
   box-sizing: border-box;
-  padding-top: 2rem;
+  padding-top: 5px;
 }
 
 /* ===== LAYOUT 3 COLUMNAS CENTRADO ===== */
@@ -451,4 +451,54 @@
 .fieldRow select {
   flex: 1;
   height: 40px;
+}
+
+.consultarBtn {
+  background: #6366f1;
+  color: white;
+}
+/* WRAPPER */
+.disponibilidadWrapper {
+  overflow-x: auto;
+}
+
+/* 🔥 GRID COMPARTIDO */
+.disponibilidadGrid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 50px; /* ancho de cada bloque */
+  gap: 4px;
+}
+
+/* BLOQUES */
+.bloqueHora {
+  height: 30px;
+  border-radius: 4px;
+}
+
+/* COLORES */
+.ocupado {
+  background: #ef4444;
+}
+
+.disponible {
+  background: #22c55e;
+}
+
+/* HORAS */
+.horasLabels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 50px;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* 🔥 cada hora ocupa 2 bloques */
+.horasLabels span {
+  grid-column: span 2;
+  text-align: center;
+  font-size: 10px;
+  color: #6b7280;
+  margin-left: -48px;
 }

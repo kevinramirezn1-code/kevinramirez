@@ -719,31 +719,30 @@ function GestionarReservas() {
         Consultar
       </button>
 
-      {/* 🔥 BARRA BONITA */}
       {disponibilidad.length > 0 && (
-        <div className="disponibilidadContainer">
-          
-          <div className="disponibilidadBar">
-            {disponibilidad.map((bloque, i) => (
-              <div
-                key={i}
-                title={`${bloque.hora} → ${bloque.estado}`}
-                className={`bloqueHora ${
-                  bloque.estado === "OCUPADO" ? "ocupado" : "disponible"
-                }`}
-              />
-            ))}
-          </div>
+        <div className="disponibilidadWrapper">
 
-          <div className="horasLabels">
-            {disponibilidad.map((bloque, i) =>
-              i % 2 === 0 ? (
-                <span key={i}>{bloque.hora}</span>
-              ) : null
-            )}
-          </div>
-
+        <div className="disponibilidadGrid">
+          {disponibilidad.map((bloque, i) => (
+            <div
+              key={i}
+              className={`bloqueHora ${
+                bloque.estado === "OCUPADO" ? "ocupado" : "disponible"
+              }`}
+              title={`${bloque.hora} → ${bloque.estado}`}
+            />
+          ))}
         </div>
+
+        <div className="horasLabels">
+          {disponibilidad.map((bloque, i) =>
+            i % 2 === 0 ? (
+              <span key={i}>{bloque.hora}</span>
+            ) : null
+          )}
+        </div>
+
+      </div>
       )}
 
       <button
