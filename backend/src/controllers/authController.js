@@ -3,31 +3,30 @@ const UsuarioDTO = require('../dtos/usuarioDTO');
 
 class AuthController {
 
-  // 🔹 LOGIN
-  async login(req, res, next) {
+  async login(req, res) {
     try {
       const { correo, contraseña } = req.body;
 
       const result = await authService.login(correo, contraseña);
 
-      // 🔥 FORMATEAR CON DTO
       const userDTO = new UsuarioDTO(result.usuario);
-
-      // 🔥 GUARDAR EL DTO EN SESIÓN
       req.session.user = userDTO;
 
       res.json({
-        message: 'Login exitoso',
+        message: ['Login exitoso'],
         user: userDTO
       });
 
     } catch (error) {
-      next(error);
+      const message = Array.isArray(error.message)
+        ? error.message
+        : [error.message || 'Error interno'];
+
+      res.status(error.status || 500).json({ message });
     }
   }
 
-  // 🔹 REGISTER
-  async register(req, res, next) {
+  async register(req, res) {
     try {
       const { correo, contraseña, idFacultad } = req.body;
 
@@ -40,35 +39,46 @@ class AuthController {
       const userDTO = new UsuarioDTO(usuario);
 
       res.status(201).json({
-        message: 'Usuario registrado',
+        message: ['Usuario registrado'],
         user: userDTO
       });
 
     } catch (error) {
-      next(error);
+      const message = Array.isArray(error.message)
+        ? error.message
+        : [error.message || 'Error interno'];
+
+      res.status(error.status || 500).json({ message });
     }
   }
 
-  // 🔹 LOGOUT
-  async logout(req, res, next) {
+  async logout(req, res) {
     try {
       req.session.destroy(() => {
-        res.json({ message: 'Sesión cerrada' });
+        res.json({ message: ['Sesión cerrada'] });
       });
     } catch (error) {
-      next(error);
+      res.status(500).json({ message: ['Error al cerrar sesión'] });
     }
   }
 
-  // 🔹 OBTENER USUARIO LOGUEADO
   async me(req, res) {
-    if (!req.session.user) {
-      return res.status(401).json({ error: 'No autenticado' });
-    }
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({
+          message: ['No autenticado']
+        });
+      }
 
-    res.json({
-      user: req.session.user // 🔥 ya viene con facultad_nombre
-    });
+      res.json({
+        user: req.session.user
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message: ['Error interno']
+      });
+    }
   }
 }
 

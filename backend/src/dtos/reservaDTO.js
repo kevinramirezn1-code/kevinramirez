@@ -15,7 +15,7 @@ class ReservaDTO {
     if (!data.fechaFin) errors.push('La fecha de fin es obligatoria');
 
     if (!data.idUsuario) {
-      errors.push('El usuario es obligatorio');
+      errors.push('El docente es obligatorio');
     } else if (isNaN(data.idUsuario)) {
       errors.push('El idUsuario debe ser numérico');
     }

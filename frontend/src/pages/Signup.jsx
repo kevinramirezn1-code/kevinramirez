@@ -1,36 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { getFacultades } from '../services/api';
 import Navbar from "../components/Navbar";
 import "../styles/Signup.css";
 import avatar from "../assets/images/avatar.png";
-
-// 🔧 Validación de contraseña
-const validatePassword = (password) => {
-  const minLength = 8;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
-
-  if (password.length < minLength) {
-    return "La contraseña debe tener al menos 8 caracteres.";
-  }
-  if (!hasUpperCase) {
-    return "La contraseña debe contener al menos una letra mayúscula.";
-  }
-  if (!hasSymbol) {
-    return "La contraseña debe contener al menos un símbolo (ej: !@#$%^&*).";
-  }
-  return null;
-};
-
-// 🔧 Validación de correo institucional
-const validateEmail = (email) => {
-  if (!email.endsWith('@uao.edu.co')) {
-    return "Solo se permiten correos institucionales (@uao.edu.co)";
-  }
-  return null;
-};
+import visible from '../assets/images/visible.png';
+import privado from '../assets/images/privado.png';
 
 function Signup() {
   const [correo, setCorreo] = useState('');
@@ -38,11 +13,8 @@ function Signup() {
   const [idFacultad, setIdFacultad] = useState('');
   const [facultades, setFacultades] = useState([]);
   const [error, setError] = useState('');
-
-  // 🔥 estado para mostrar/ocultar contraseña
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  const { register, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,7 +23,7 @@ function Signup() {
         const data = await getFacultades();
         setFacultades(data);
       } catch (err) {
-        console.error('Error cargando facultades', err);
+        console.error(err);
       }
     };
     fetchFacultades();
@@ -61,27 +33,38 @@ function Signup() {
     e.preventDefault();
     setError('');
 
-    const emailError = validateEmail(correo);
-    if (emailError) {
-      setError(emailError);
-      return;
-    }
-
-    const passwordError = validatePassword(contraseña);
-    if (passwordError) {
-      setError(passwordError);
-      return;
-    }
-
     try {
-      const result = await register(correo, contraseña, parseInt(idFacultad));
-      if (result && result.user) {
-        navigate('/login');
-      } else {
-        setError('Error en registro');
+      const res = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          correo,
+          contraseña,
+          idFacultad: Number(idFacultad)
+        })
+      });
+
+      const data = await res.json();
+
+      // 🔥 IGUAL QUE GESTIONAR SALAS
+      if (!res.ok) {
+        setError(
+          data.error ||
+          data.message?.join(", ") ||
+          data.errores?.join(", ") ||
+          "Error en registro"
+        );
+        return;
       }
+
+      // ✅ SOLO SI TODO SALE BIEN
+      navigate('/login');
+
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+      setError("Error de conexión con el servidor");
     }
   };
 
@@ -104,7 +87,6 @@ function Signup() {
               required
             />
 
-            {/* 🔥 CONTRASEÑA CON OJITO */}
             <div className="passwordContainer">
               <input
                 className="contraseña"
@@ -115,12 +97,12 @@ function Signup() {
                 required
               />
 
-              <span
+              <img
+                src={mostrarPassword ? visible : privado}
+                alt="toggle password"
                 className="togglePassword"
                 onClick={() => setMostrarPassword(!mostrarPassword)}
-              >
-                {mostrarPassword ? "🙈" : "👁️"}
-              </span>
+              />
             </div>
 
             <select
@@ -139,8 +121,8 @@ function Signup() {
 
             {error && <p className="error-message">{error}</p>}
 
-            <button className="ingresar" type="submit" disabled={loading}>
-              {loading ? 'Registrando...' : 'Registrarse'}
+            <button className="ingresar" type="submit">
+              Registrarse
             </button>
 
           </form>

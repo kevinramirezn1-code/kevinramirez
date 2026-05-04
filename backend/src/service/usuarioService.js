@@ -1,13 +1,33 @@
 const { Usuario, Facultad } = require('../models');
+const UsuarioDTO = require('../dtos/usuarioDTO');
+
+// 🔥 helper para crear errores correctamente
+const createError = (status, message) => {
+  const err = new Error();
+  err.status = status;
+  err.message = Array.isArray(message) ? message : [message];
+  return err;
+};
 
 class UsuarioService {
 
   async crear(data) {
+
+    // 🔥 VALIDACIÓN DTO
+    const errores = UsuarioDTO.validarCrear(data);
+    if (errores.length > 0) {
+      throw createError(400, errores);
+    }
+
     const facultad = await Facultad.findByPk(data.idFacultad);
-    if (!facultad) throw new Error('Facultad no existe');
+    if (!facultad) {
+      throw createError(400, 'La facultad no existe');
+    }
 
     const existe = await Usuario.findOne({ where: { correo: data.correo } });
-    if (existe) throw new Error('Correo ya registrado');
+    if (existe) {
+      throw createError(400, 'El correo ya se encuentra registrado en el sistema y no puede asociarse a otra facultad');
+    }
 
     return await Usuario.create(data);
   }
@@ -35,21 +55,35 @@ class UsuarioService {
       include: [{ model: Facultad, as: 'facultad' }]
     });
 
-    if (!usuario) throw new Error('Usuario no encontrado');
+    if (!usuario) {
+      throw createError(404, 'Usuario no encontrado');
+    }
+
     return usuario;
   }
 
   async actualizar(id, data) {
     const usuario = await this.obtenerPorId(id);
 
+    if (data.contraseña) {
+      const errores = UsuarioDTO.validarCrear(data);
+      if (errores.length > 0) {
+        throw createError(400, errores);
+      }
+    }
+
     if (data.correo && data.correo !== usuario.correo) {
       const existe = await Usuario.findOne({ where: { correo: data.correo } });
-      if (existe) throw new Error('Correo ya usado');
+      if (existe) {
+        throw createError(400, 'El correo ya está en uso');
+      }
     }
 
     if (data.idFacultad) {
       const facultad = await Facultad.findByPk(data.idFacultad);
-      if (!facultad) throw new Error('Facultad no existe');
+      if (!facultad) {
+        throw createError(400, 'La facultad no existe');
+      }
     }
 
     await usuario.update(data);

@@ -5,54 +5,68 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) {
       try {
         setUser(JSON.parse(stored));
-      } catch (e) {
+      } catch {
         localStorage.removeItem('user');
       }
     }
-    setLoading(false);
   }, []);
 
-  const login = async (correo, contraseña) => {
-    try {
-      const data = await api.login(correo, contraseña);
-      if (data?.user) {
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return { success: true, user: data.user };
-      }
-      return { success: false, error: 'Respuesta inválida' };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
+  // 🔹 LOGIN
+  // 🔹 LOGIN
+const login = async (correo, contraseña) => {
+  try {
+    const data = await api.login(correo, contraseña);
 
+    if (data?.user) {
+      setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      return { success: true, user: data.user };
+    }
+
+    return { success: false, error: 'Respuesta inválida' };
+
+  } catch (error) {
+
+    const message =
+      error.response?.data?.message;
+
+    return {
+      success: false,
+      error: Array.isArray(message)
+        ? message.join(", ")
+        : message || 'Error al iniciar sesión'
+    };
+  }
+};
+
+  // 🔹 REGISTER
   const register = async (correo, contraseña, idFacultad) => {
     try {
-      const data = await api.register(correo, contraseña, idFacultad);
-      if (data?.user) {
-        return { success: true, user: data.user };
-      }
-      return { success: false, error: 'Respuesta inválida' };
+      return await api.register(correo, contraseña, idFacultad);
     } catch (error) {
-      return { success: false, error: error.message };
+      throw error;
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     localStorage.removeItem('user');
-    api.logout().catch(console.error);
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

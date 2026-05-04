@@ -1,33 +1,27 @@
 const { Usuario, Facultad, ListaBlanca } = require('../models');
+const UsuarioDTO = require('../dtos/usuarioDTO'); // 🔥 IMPORTANTE
 
 class AuthService {
 
-  // 🔧 Función auxiliar para validar la contraseña
-  isValidPassword(password) {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasSymbol = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
-    return password.length >= minLength && hasUpperCase && hasSymbol;
-  }
   async register({ correo, contraseña, idFacultad }) {
 
-    // 🔥 Validar contraseña antes de cualquier otra comprobación
-    if (!this.isValidPassword(contraseña)) {
-      throw new Error('La contraseña debe tener al menos 8 caracteres, una mayúscula y un símbolo');
+    // 🔥 VALIDACIÓN CENTRALIZADA EN DTO
+    const errores = UsuarioDTO.validarCrear({ correo, contraseña, idFacultad });
+    if (errores.length > 0) {
+      throw { status: 400, message: errores };
     }
 
     const facultad = await Facultad.findByPk(idFacultad);
     if (!facultad) {
-      throw new Error('La facultad especificada no existe');
+      throw { status: 400, message: 'La facultad especificada no existe' };
     }
 
     const existe = await Usuario.findOne({ where: { correo } });
     if (existe) {
-      throw new Error('El correo ya está registrado');
+      throw { status: 400, message: 'El correo ya está registrado' };
     }
 
     const enListaBlanca = await ListaBlanca.findOne({ where: { correo } });
-
     const rol = enListaBlanca ? 'secretaria' : 'docente';
 
     const nuevoUsuario = await Usuario.create({
@@ -37,13 +31,6 @@ class AuthService {
       idFacultad
     });
 
-
- // Validar dominio del correo
-  if (!correo.endsWith('@uao.edu.co')) {
-    throw new Error('Solo se permiten correos institucionales (@uao.edu.co)');
-  }
-
-    // 🔥 incluir facultad
     const usuarioConFacultad = await Usuario.findByPk(nuevoUsuario.id, {
       include: {
         model: Facultad,
@@ -59,6 +46,11 @@ class AuthService {
 
   async login(correo, contraseña) {
 
+    const errores = UsuarioDTO.validarLogin({ correo, contraseña });
+    if (errores.length > 0) {
+      throw { status: 400, message: errores };
+    }
+
     const usuario = await Usuario.findOne({
       where: { correo },
       include: {
@@ -68,11 +60,11 @@ class AuthService {
     });
 
     if (!usuario) {
-      throw new Error('Credenciales inválidas');
+      throw { status: 400, message: 'Credenciales inválidas' };
     }
 
     if (usuario.contraseña !== contraseña) {
-      throw new Error('Credenciales inválidas');
+      throw { status: 400, message: 'Credenciales inválidas' };
     }
 
     const usuarioResponse = usuario.toJSON();

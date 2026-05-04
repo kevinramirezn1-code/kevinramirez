@@ -15,23 +15,35 @@ class UsuarioDTO {
   static validarCrear(data) {
     const errors = [];
 
+    // 🔹 CORREO
     if (!data.correo || data.correo.trim() === '') {
       errors.push('El correo es obligatorio');
     }
 
+    // 🔹 CONTRASEÑA
     if (!data.contraseña || data.contraseña.trim() === '') {
       errors.push('La contraseña es obligatoria');
     } else {
-      // 🔥 VALIDACIÓN FUERTE
-      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#_-])[A-Za-z\d@$!%*?&.#_-]{8,}$/;
+      const password = data.contraseña;
 
-      if (!passwordRegex.test(data.contraseña)) {
-        errors.push(
-          'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial'
-        );
+      if (password.length < 8) {
+        errors.push('La contraseña debe tener al menos 8 caracteres');
+      }
+
+      if (!/[A-Z]/.test(password)) {
+        errors.push('La contraseña debe tener al menos una letra mayúscula');
+      }
+
+      if (!/\d/.test(password)) {
+        errors.push('La contraseña debe tener al menos un número');
+      }
+
+      if (!/[@$!%*?&.#_-]/.test(password)) {
+        errors.push('La contraseña debe tener al menos un carácter especial (@$!%*?&.#_-)');
       }
     }
 
+    // 🔹 FACULTAD
     if (!data.idFacultad) {
       errors.push('La facultad es obligatoria');
     }

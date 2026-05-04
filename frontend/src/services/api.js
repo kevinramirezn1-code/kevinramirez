@@ -13,6 +13,7 @@ const api = axios.create({
 });
 
 // 🔹 LOGIN
+// 🔹 LOGIN
 export const login = async (correo, contraseña) => {
   try {
     const res = await api.post('/auth/login', {
@@ -21,9 +22,7 @@ export const login = async (correo, contraseña) => {
     });
     return res.data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || 'Error en login'
-    );
+    throw error; // ✅ deja el error original
   }
 };
 
@@ -37,9 +36,7 @@ export const register = async (correo, contraseña, idFacultad) => {
     });
     return res.data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || 'Error en registro'
-    );
+    throw error; // ✅ NO transformar
   }
 };
 

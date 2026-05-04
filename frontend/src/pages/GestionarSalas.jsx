@@ -39,6 +39,10 @@ function GestionarSalas({ user }) {
     capacidad: ""
   });
 
+  // Estados para la validación del estado
+  const [estado, setEstado] = useState('Seleccione');
+  const [error, setError] = useState('');
+
   const obtenerSalas = async () => {
     const res = await fetch("http://localhost:3001/api/salas", {
       credentials: "include"
@@ -68,15 +72,13 @@ function GestionarSalas({ user }) {
         })
       });
 
-      const data = await res.json(); // 🔥 IMPORTANTE
+      const data = await res.json();
 
       if (!res.ok) {
-        // ❌ ERROR DEL BACKEND
         alert(data.error || data.errores?.join(", ") || "Error al crear sala");
         return;
       }
 
-      // ✅ ÉXITO
       alert("Sala creada correctamente ✅");
 
       setShowModal(false);
@@ -104,15 +106,13 @@ function GestionarSalas({ user }) {
         }
       );
 
-      const data = await res.json(); // 🔥 LEER RESPUESTA
+      const data = await res.json();
 
       if (!res.ok) {
-        // ❌ ERROR DEL BACKEND
         alert(data.error || data.errores?.join(", ") || "Error al actualizar");
         return;
       }
 
-      // ✅ SOLO SI TODO SALIÓ BIEN
       alert("Actualizado ✅");
       obtenerSalas();
 
@@ -122,21 +122,31 @@ function GestionarSalas({ user }) {
     }
   };
 
-  const editarEstado = async () => {
-    await fetch(
-      `http://localhost:3001/api/salas/${selectedSala.id}`,
-      {
+  // Función para guardar el estado (con validación)
+  const handleGuardarEstado = async () => {
+    setError('');
+    if (!estado || estado === 'Seleccione') {
+      setError('Por favor seleccione un estado ');
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:3001/api/salas/${selectedSala.id}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          estado: editEstado.toLowerCase()
-        })
+        body: JSON.stringify({ estado: estado.toLowerCase() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || data.errores?.join(", ") || "Error al actualizar");
+        return;
       }
-    );
-
-    alert("Estado actualizado ✅");
-    obtenerSalas();
+      alert("Estado actualizado ✅");
+      obtenerSalas();
+      setShowEditModal(false);
+    } catch (err) {
+      setError(err.message || "Error de conexión");
+    }
   };
 
   const obtenerRecursosSala = async (idSala) => {
@@ -171,12 +181,10 @@ function GestionarSalas({ user }) {
       const data = await res.json();
 
       if (!res.ok) {
-        // 🔥 AQUÍ capturas errores del backend
         alert(data.error || data.errores?.join("\n") || "Error al crear recurso");
         return;
       }
 
-      // ✅ éxito
       setNuevoRecurso({ codigo: "", tipo: "", descripcion: "" });
       obtenerRecursosSala(selectedSala.id);
 
@@ -196,7 +204,6 @@ function GestionarSalas({ user }) {
         id_recurso: id_recurso
       });
 
-      // 🔥 ACTUALIZA EL ESTADO SIN RECARGAR
       setRecursosSala(prev =>
         prev.filter(r => r.id_recurso !== id_recurso)
       );
@@ -265,6 +272,7 @@ function GestionarSalas({ user }) {
                     capacidad: s.capacidad
                   });
                   setEditEstado(s.estado);
+                  setEstado('Seleccione'); // ← CAMBIO: por defecto "Seleccione"
                 }}
               >
                 Editar
@@ -280,10 +288,10 @@ function GestionarSalas({ user }) {
           <div className="modal">
             <h3>Crear Sala</h3>
 
-            <input placeholder="ID" onChange={e => setSala({...sala,id:e.target.value})}/>
-            <input placeholder="Nombre" onChange={e => setSala({...sala,nombre:e.target.value})}/>
-            <input placeholder="Ubicación" onChange={e => setSala({...sala,ubicacion:e.target.value})}/>
-            <input type="number" placeholder="Capacidad" onChange={e => setSala({...sala,capacidad:e.target.value})}/>
+            <input placeholder="ID" onChange={e => setSala({...sala, id:e.target.value})}/>
+            <input placeholder="Nombre" onChange={e => setSala({...sala, nombre:e.target.value})}/>
+            <input placeholder="Ubicación" onChange={e => setSala({...sala, ubicacion:e.target.value})}/>
+            <input type="number" placeholder="Capacidad" onChange={e => setSala({...sala, capacidad:e.target.value})}/>
 
             <div className="modal-buttons">
               <button className="cancelar" onClick={() => setShowModal(false)}>Cancelar</button>
@@ -293,11 +301,10 @@ function GestionarSalas({ user }) {
         </div>
       )}
 
-      {/* MODAL INFO BONITO */}
+      {/* MODAL INFO */}
       {showInfoModal && selectedSala && (
         <div className="modal-overlay">
           <div className="modal info-modal">
-
             <h3>Detalles de la Sala</h3>
 
             <div className="info-grid">
@@ -318,7 +325,6 @@ function GestionarSalas({ user }) {
                 Cerrar
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -327,7 +333,6 @@ function GestionarSalas({ user }) {
       {showEditModal && selectedSala && (
         <div className="modal-overlay">
           <div className="modal">
-
             <h3>Editar Sala</h3>
 
             <div className="tabs">
@@ -344,9 +349,9 @@ function GestionarSalas({ user }) {
 
             {editTab === "info" && (
               <>
-                <input value={editForm.nombre} onChange={e=>setEditForm({...editForm,nombre:e.target.value})}/>
-                <input value={editForm.ubicacion} onChange={e=>setEditForm({...editForm,ubicacion:e.target.value})}/>
-                <input type="number" value={editForm.capacidad} onChange={e=>setEditForm({...editForm,capacidad:e.target.value})}/>
+                <input value={editForm.nombre} onChange={e=>setEditForm({...editForm, nombre:e.target.value})}/>
+                <input value={editForm.ubicacion} onChange={e=>setEditForm({...editForm, ubicacion:e.target.value})}/>
+                <input type="number" value={editForm.capacidad} onChange={e=>setEditForm({...editForm, capacidad:e.target.value})}/>
 
                 <button className="btn-guardar" onClick={editarInfo}>
                   Guardar Cambios
@@ -356,14 +361,14 @@ function GestionarSalas({ user }) {
 
             {editTab === "estado" && (
               <>
-                <select value={editEstado} onChange={e=>setEditEstado(e.target.value)}>
-                  <option value="">Seleccione</option>
-                  <option value="disponible">Disponible</option>
-                  <option value="ocupado">Ocupado</option>
-                  <option value="mantenimiento">Mantenimiento</option>
+                <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+                  <option value="Seleccione" disabled>Seleccione</option>
+                  <option value="Disponible">Disponible</option>
+                  <option value="Ocupado">Ocupado</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
                 </select>
-
-                <button className="btn-estado" onClick={editarEstado}>
+                {error && <p className="error-message">{error}</p>}
+                <button className="btn-estado" onClick={handleGuardarEstado}>
                   Actualizar Estado
                 </button>
               </>
@@ -374,16 +379,14 @@ function GestionarSalas({ user }) {
                 Cerrar
               </button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/*MODAL RECURSOS */}
+      {/* MODAL RECURSOS */}
       {showRecursosModal && selectedSala && (
         <div className="modal-overlay">
           <div className="modal recursos-modal">
-
             <h3>Recursos - {selectedSala.nombre}</h3>
 
             <div className="recursos-container">
@@ -453,14 +456,10 @@ function GestionarSalas({ user }) {
             </div>
 
             <div className="modal-buttons">
-              <button
-                className="cancelar"
-                onClick={() => setShowRecursosModal(false)}
-              >
+              <button className="cancelar" onClick={() => setShowRecursosModal(false)}>
                 Cerrar
               </button>
             </div>
-
           </div>
         </div>
       )}
