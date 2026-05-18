@@ -13,14 +13,14 @@ const validar = (req, res, next) => {
 
 router.get(
   '/sala/:idSala',
-  param('idSala').isString().notEmpty(),
+  param('idSala').isInt({ min: 1 }),
   validar,
   salaRecursoController.listarPorSala
 );
 
 router.post(
   '/',
-  body('id_sala').isString().notEmpty(),
+  body('id_sala').isInt({ min: 1 }),
   body('codigo').isString().notEmpty(),
   body('tipo').isString().notEmpty(),
   body('descripcion').isString().notEmpty(),
@@ -30,7 +30,7 @@ router.post(
 
 router.patch(
   '/',
-  body('id_sala').isString().notEmpty(),
+  body('id_sala').isInt({ min: 1 }),
   body('id_recurso').isInt({ min: 1 }),
   validar,
   salaRecursoController.eliminar

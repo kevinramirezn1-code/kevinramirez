@@ -12,7 +12,6 @@ exports.crear = async (req, res, next) => {
     }
 
     const {
-      id,
       nombre,
       ubicacion,
       capacidad,
@@ -20,14 +19,6 @@ exports.crear = async (req, res, next) => {
     } = req.body;
 
     const facultad_id = req.user.idFacultad;
-
-    // 🔹 Validar ID duplicado
-    const salaExistente = await Sala.findByPk(id);
-    if (salaExistente) {
-      return res.status(400).json({
-        error: 'Ya existe una sala con ese ID'
-      });
-    }
 
     // 🔹 Validar nombre duplicado
     const salaExistenteNombre = await Sala.findOne({
@@ -45,7 +36,6 @@ exports.crear = async (req, res, next) => {
 
     // 🔹 Crear sala (esto va FUERA del if)
     const sala = await salaService.crear({
-      id,
       nombre,
       ubicacion,
       capacidad,
@@ -116,13 +106,14 @@ exports.actualizar = async (req, res, next) => {
 exports.actualizarDatos = async (req, res, next) => {
   try {
     const errors = SalaDTO.validarActualizarDatos(req.body);
+
     if (errors.length > 0) {
       return res.status(400).json({ errores: errors });
     }
 
     const sala = await salaService.obtenerPorId(req.params.id);
 
-    // 🔥 Validar acceso a la facultad
+    // Validar acceso
     if (sala.facultad_id !== req.user.idFacultad) {
       return res.status(403).json({ error: 'No tienes acceso' });
     }
@@ -130,22 +121,28 @@ exports.actualizarDatos = async (req, res, next) => {
     const { nombre } = req.body;
     const facultad_id = req.user.idFacultad;
 
-    // 🔥 Validar nombre duplicado (excluyendo la misma sala)
+    // Validar nombre duplicado
     const salaExistenteNombre = await Sala.findOne({
       where: {
-        nombre: nombre,
-        facultad_id: facultad_id
+        nombre,
+        facultad_id
       }
     });
 
-    if (salaExistenteNombre && salaExistenteNombre.id !== req.params.id) {
+    if (
+      salaExistenteNombre &&
+      salaExistenteNombre.id !== Number(req.params.id)
+    ) {
       return res.status(400).json({
         error: 'Ya existe una sala con ese nombre en esta facultad'
       });
     }
 
-    // 🔥 actualizar
-    const updated = await salaService.actualizar(req.params.id, req.body);
+    // Actualizar
+    const updated = await salaService.actualizar(
+      req.params.id,
+      req.body
+    );
 
     res.json(new SalaDTO(updated));
 

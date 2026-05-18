@@ -33,7 +33,6 @@ function GestionarSalas({ user }) {
   const [editEstado, setEditEstado] = useState("");
 
   const [sala, setSala] = useState({
-    id: "",
     nombre: "",
     ubicacion: "",
     capacidad: ""
@@ -42,6 +41,16 @@ function GestionarSalas({ user }) {
   // Estados para la validación del estado
   const [estado, setEstado] = useState('Seleccione');
   const [error, setError] = useState('');
+
+  const ubicaciones = [
+    "Bloque A",
+    "Bloque B",
+    "Bloque C",
+    "Laboratorio 1",
+    "Laboratorio 2",
+    "Biblioteca",
+    "Auditorio"
+  ];
 
   const obtenerSalas = async () => {
     const res = await fetch("http://localhost:3001/api/salas", {
@@ -56,7 +65,7 @@ function GestionarSalas({ user }) {
   }, []);
 
   const crearSala = async () => {
-    if (!sala.id || !sala.nombre || !sala.ubicacion || !sala.capacidad) {
+    if (!sala.nombre || !sala.ubicacion || !sala.capacidad){
       return alert("Campos obligatorios");
     }
 
@@ -82,7 +91,7 @@ function GestionarSalas({ user }) {
       alert("Sala creada correctamente ✅");
 
       setShowModal(false);
-      setSala({ id: "", nombre: "", ubicacion: "", capacidad: "" });
+      setSala({nombre: "", ubicacion: "", capacidad: "" });
       obtenerSalas();
 
     } catch (error) {
@@ -181,9 +190,15 @@ function GestionarSalas({ user }) {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || data.errores?.join("\n") || "Error al crear recurso");
+        alert(
+          data.error ||
+          data.errores?.map(e => e.msg || e).join("\n") ||
+          "Error al crear recurso"
+        );
         return;
       }
+
+      alert("Recurso agregado correctamente ✅");
 
       setNuevoRecurso({ codigo: "", tipo: "", descripcion: "" });
       obtenerRecursosSala(selectedSala.id);
@@ -207,6 +222,8 @@ function GestionarSalas({ user }) {
       setRecursosSala(prev =>
         prev.filter(r => r.id_recurso !== id_recurso)
       );
+
+      alert("Recurso eliminado correctamente ✅");
 
     } catch (err) {
       console.error(err);
@@ -287,10 +304,20 @@ function GestionarSalas({ user }) {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Crear Sala</h3>
-
-            <input placeholder="ID" onChange={e => setSala({...sala, id:e.target.value})}/>
+            
             <input placeholder="Nombre" onChange={e => setSala({...sala, nombre:e.target.value})}/>
-            <input placeholder="Ubicación" onChange={e => setSala({...sala, ubicacion:e.target.value})}/>
+            <select
+              value={sala.ubicacion}
+              onChange={e => setSala({ ...sala, ubicacion: e.target.value })}
+            >
+              <option value="">Seleccione ubicación</option>
+
+              {ubicaciones.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
             <input type="number" placeholder="Capacidad" onChange={e => setSala({...sala, capacidad:e.target.value})}/>
 
             <div className="modal-buttons">
@@ -350,7 +377,23 @@ function GestionarSalas({ user }) {
             {editTab === "info" && (
               <>
                 <input value={editForm.nombre} onChange={e=>setEditForm({...editForm, nombre:e.target.value})}/>
-                <input value={editForm.ubicacion} onChange={e=>setEditForm({...editForm, ubicacion:e.target.value})}/>
+                <select
+                  value={editForm.ubicacion}
+                  onChange={e =>
+                    setEditForm({
+                      ...editForm,
+                      ubicacion: e.target.value
+                    })
+                  }
+                >
+                  <option value="">Seleccione ubicación</option>
+
+                  {ubicaciones.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
                 <input type="number" value={editForm.capacidad} onChange={e=>setEditForm({...editForm, capacidad:e.target.value})}/>
 
                 <button className="btn-guardar" onClick={editarInfo}>

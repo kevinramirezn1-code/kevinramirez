@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true
     },
     id_sala: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     id_recurso: {

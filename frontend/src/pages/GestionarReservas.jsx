@@ -521,14 +521,26 @@ function GestionarReservas() {
 
               <button
                 className="reservaBtnVertical ajustarBtn"
-                onClick={abrirModalEditar}
+                onClick={() => {
+                  if (!selectedDate) {
+                    alert("Debes seleccionar un día antes de ajustar la reserva");
+                    return;
+                  }
+                  abrirModalEditar();
+                }}
               >
                 Ajustar
               </button>
 
               <button
                 className="reservaBtnVertical cancelarBtn"
-                onClick={handleCancelarReserva}
+                onClick={() => {
+                  if (!selectedDate) {
+                    alert("Debes seleccionar un día antes de cancelar la reserva");
+                    return;
+                  }
+                  handleCancelarReserva();
+                }}
               >
                 Cancelar
               </button>

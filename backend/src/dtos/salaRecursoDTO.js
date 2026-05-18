@@ -9,40 +9,60 @@ class SalaRecursoDTO {
   }
 
   static validarCrear(data) {
-    const errores = [];
+  const errors = [];
 
-    if (!data.id_sala || typeof data.id_sala !== 'string') {
-      errores.push('id_sala es obligatorio y debe ser texto');
-    }
-
-    if (!data.codigo || typeof data.codigo !== 'string') {
-      errores.push('codigo es obligatorio y debe ser texto');
-    }
-
-    if (!data.tipo || typeof data.tipo !== 'string') {
-      errores.push('tipo es obligatorio y debe ser texto');
-    }
-
-    if (!data.descripcion || typeof data.descripcion !== 'string') {
-      errores.push('descripcion es obligatorio y debe ser texto');
-    }
-
-    if (data.estado !== undefined && typeof data.estado !== 'string') {
-      errores.push('estado debe ser texto');
-    }
-
-    return errores;
+  if (!data.id_sala || isNaN(data.id_sala)) {
+    errors.push("La sala es obligatoria");
   }
+
+  if (!data.codigo || data.codigo.toString().trim() === '') {
+    errors.push('El c贸digo es obligatorio');
+  } else {
+    const codigo = data.codigo.toString().trim();
+
+    if (codigo.length > 45) {
+      errors.push('El c贸digo no puede tener m谩s de 45 caracteres');
+    } else if (!/[a-zA-Z]/.test(codigo)) {
+      errors.push('El c贸digo debe contener al menos una letra');
+    }
+  }
+
+  if (!data.tipo || data.tipo.toString().trim() === '') {
+    errors.push('El tipo es obligatorio');
+  } else {
+    const tipo = data.tipo.toString().trim();
+
+    if (tipo.length > 45) {
+      errors.push('El tipo no puede tener m谩s de 45 caracteres');
+    } else if (!/[a-zA-Z]/.test(tipo)) {
+      errors.push('El tipo debe contener al menos una letra');
+    }
+  }
+
+  if (!data.descripcion || data.descripcion.toString().trim() === '') {
+    errors.push('La descripci贸n es obligatoria');
+  } else {
+    const desc = data.descripcion.toString().trim();
+
+    if (desc.length > 100) {
+      errors.push('La descripci贸n no puede tener m谩s de 100 caracteres');
+    } else if (!/[a-zA-Z]/.test(desc)) {
+      errors.push('La descripci贸n debe contener al menos una letra');
+    }
+  }
+
+  return errors;
+}
 
   static validarEliminar(data) {
     const errores = [];
 
-    if (!data.id_sala || typeof data.id_sala !== 'string') {
-      errores.push('id_sala es obligatorio y debe ser texto');
+    if (!data.id_sala || isNaN(data.id_sala)) {
+      errores.push('id_sala es obligatorio y debe ser numérico');
     }
 
     if (!data.id_recurso || isNaN(data.id_recurso)) {
-      errores.push('id_recurso es obligatorio y debe ser numérico');
+      errores.push('id_recurso es obligatorio y debe ser num茅rico');
     }
 
     return errores;

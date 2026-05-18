@@ -32,12 +32,6 @@ class SalaDTO {
       return errors;
     }
 
-    if (!data.id || data.id.toString().trim() === '') {
-      errors.push('El id es obligatorio y debe tener al menos 1 carácter');
-    } else if (/^\d+$/.test(data.id.toString())) {
-      errors.push('El id no puede ser solo números');
-    }
-
     if (!data.nombre || data.nombre.trim() === '') {
       errors.push('El nombre es obligatorio');
     } else if (!this.esTextoValido(data.nombre)) {

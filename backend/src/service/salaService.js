@@ -4,7 +4,6 @@ class SalaService {
 
   async crear(data) {
     return await Sala.create({
-      id: data.id,
       nombre: data.nombre,
       ubicacion: data.ubicacion,
       capacidad: Number(data.capacidad),
@@ -34,7 +33,6 @@ class SalaService {
       ubicacion: data.ubicacion ?? sala.ubicacion,
       capacidad: data.capacidad ? Number(data.capacidad) : sala.capacidad,
       estado: data.estado ?? sala.estado
-      // ❌ facultad NO se toca
     });
 
     return sala;

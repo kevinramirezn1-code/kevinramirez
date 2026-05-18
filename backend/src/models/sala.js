@@ -1,8 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
   const Sala = sequelize.define('Sala', {
     id: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.INTEGER,
       primaryKey: true,
+      autoIncrement: true,
       allowNull: false
     },
     nombre: {

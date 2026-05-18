@@ -5,6 +5,7 @@ const RecursoDTO = require('../dtos/recursoDTO');
 exports.crear = async (req, res, next) => {
   try {
     const errors = RecursoDTO.validarCrear(req.body);
+
     if (errors.length > 0) {
       return res.status(400).json({ errores: errors });
     }

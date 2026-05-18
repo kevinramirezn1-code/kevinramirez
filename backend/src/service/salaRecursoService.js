@@ -130,8 +130,8 @@ exports.agregar = async ({ id_sala, codigo, tipo, descripcion }) => {
 // 🔹 ELIMINAR (CAMBIAR A INACTIVO)
 exports.eliminarDeSala = async ({ id_sala, id_recurso }) => {
 
-  if (!id_sala || typeof id_sala !== 'string') {
-    throw new Error('id_sala es obligatorio y debe ser texto');
+  if (!id_sala || isNaN(id_sala)) {
+    throw new Error('id_sala es obligatorio y debe ser numérico');
   }
 
   if (!id_recurso || isNaN(id_recurso)) {
