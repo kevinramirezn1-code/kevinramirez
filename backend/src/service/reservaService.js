@@ -1,4 +1,5 @@
 const { Reserva } = require('../models');
+const { Op } = require('sequelize');
 
 class ReservaService {
 
@@ -34,6 +35,39 @@ class ReservaService {
 
     await reserva.update(data);
     return reserva;
+  }
+
+  async historialFacultad({ idSala, estado, fechaInicio, fechaFin } = {}) {
+
+    const where = {};
+
+    if (idSala) {
+      where.idSala = idSala;
+    }
+
+    if (estado) {
+      where.estado = estado;
+    }
+
+    if (fechaInicio || fechaFin) {
+
+      where.fechaInicio = {};
+
+      if (fechaInicio) {
+        where.fechaInicio[Op.gte] =
+          new Date(`${fechaInicio}T00:00:00`);
+      }
+
+      if (fechaFin) {
+        where.fechaInicio[Op.lte] =
+          new Date(`${fechaFin}T23:59:59`);
+      }
+    }
+
+    return await Reserva.findAll({
+      where,
+      order: [['fechaInicio', 'DESC']]
+    });
   }
 
   async eliminar(id) {

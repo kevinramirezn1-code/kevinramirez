@@ -32,6 +32,18 @@ function GestionarReservas() {
   const [docentes, setDocentes] = useState([]);
   const [docenteSeleccionado, setDocenteSeleccionado] = useState("");
 
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [historialReservas, setHistorialReservas] = useState([]);
+  const [filtroSala, setFiltroSala] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroFechaInicio, setFiltroFechaInicio] = useState("");
+  const [filtroFechaFin, setFiltroFechaFin] = useState("");
+
+  const [historialPage, setHistorialPage] = useState(1);
+  const HISTORIAL_PAGE_SIZE = 10;
+
+  const [usuarios, setUsuarios] = useState([]);
+
   const API_URL = "http://localhost:3001/api";
 
   const opcionesHora = [];
@@ -48,62 +60,62 @@ function GestionarReservas() {
     }
   
   const generarDisponibilidad = async () => {
-  if (!salaConsulta) return alert("Selecciona una sala");
-  if (!fechaConsulta) return alert("Selecciona una fecha");
+    if (!salaConsulta) return alert("Selecciona una sala");
+    if (!fechaConsulta) return alert("Selecciona una fecha");
 
-  try {
-    const res = await axios.get(
-      `${API_URL}/reservas?fecha=${fechaConsulta}`
-    );
+    try {
+      const res = await axios.get(
+        `${API_URL}/reservas?fecha=${fechaConsulta}`
+      );
 
-    const reservasSala = res.data.filter(
-      r => r.idSala == salaConsulta
-    );
+      const reservasSala = res.data.filter(
+        r => r.idSala == salaConsulta
+      );
 
-    // ✅ FIX REAL SIN DESFASE
-    const getMinutosDesdeISO = (fechaISO) => {
-      const fecha = new Date(fechaISO);
-      return fecha.getHours() * 60 + fecha.getMinutes();
-    };
+      // ✅ FIX REAL SIN DESFASE
+      const getMinutosDesdeISO = (fechaISO) => {
+        const fecha = new Date(fechaISO);
+        return fecha.getHours() * 60 + fecha.getMinutes();
+      };
 
-    const minutosAHora12 = (minutosTotales) => {
-      let h = Math.floor(minutosTotales / 60);
-      const m = minutosTotales % 60;
+      const minutosAHora12 = (minutosTotales) => {
+        let h = Math.floor(minutosTotales / 60);
+        const m = minutosTotales % 60;
 
-      const ampm = h >= 12 ? "PM" : "AM";
-      h = h % 12;
-      if (h === 0) h = 12;
+        const ampm = h >= 12 ? "PM" : "AM";
+        h = h % 12;
+        if (h === 0) h = 12;
 
-      return `${h}:${m === 0 ? "00" : m} ${ampm}`;
-    };
+        return `${h}:${m === 0 ? "00" : m} ${ampm}`;
+      };
 
-    const bloques = [];
+      const bloques = [];
 
-    for (let minutos = 7 * 60; minutos < 21 * 60 + 30; minutos += 30) {
+      for (let minutos = 7 * 60; minutos < 21 * 60 + 30; minutos += 30) {
 
-      const inicioBloqueMin = minutos;
-      const finBloqueMin = minutos + 30;
+        const inicioBloqueMin = minutos;
+        const finBloqueMin = minutos + 30;
 
-      const ocupado = reservasSala.some(r => {
-        const inicioResMin = getMinutosDesdeISO(r.fechaInicio);
-        const finResMin = getMinutosDesdeISO(r.fechaFin);
+        const ocupado = reservasSala.some(r => {
+          const inicioResMin = getMinutosDesdeISO(r.fechaInicio);
+          const finResMin = getMinutosDesdeISO(r.fechaFin);
 
-        return inicioBloqueMin < finResMin && finBloqueMin > inicioResMin;
-      });
+          return inicioBloqueMin < finResMin && finBloqueMin > inicioResMin;
+        });
 
-      bloques.push({
-        hora: minutosAHora12(minutos),
-        estado: ocupado ? "OCUPADO" : "DISPONIBLE"
-      });
+        bloques.push({
+          hora: minutosAHora12(minutos),
+          estado: ocupado ? "OCUPADO" : "DISPONIBLE"
+        });
+      }
+
+      setDisponibilidad(bloques);
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al consultar disponibilidad");
     }
-
-    setDisponibilidad(bloques);
-
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error al consultar disponibilidad");
-  }
-};
+  };
 
   const formatoHora = (hora) => {
     const [time, ampm] = hora.split(" ");
@@ -159,6 +171,26 @@ function GestionarReservas() {
     };
 
     fetchSalas();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+
+        const res = await axios.get(
+          `${API_URL}/usuarios`,
+          { withCredentials: true }
+        );
+
+        setUsuarios(res.data.items);
+
+      } catch (error) {
+        console.error("Error cargando usuarios", error);
+      }
+    };
+
+    fetchUsuarios();
+
   }, []);
 
   useEffect(() => {
@@ -551,6 +583,16 @@ function GestionarReservas() {
               >
                 Consultar
               </button>
+
+              {user?.rol?.toLowerCase() === "secretaria" && (
+                <button
+                  className="reservaBtnVertical historialBtn"
+                  onClick={() => setShowHistorial(true)}
+                >
+                  Historial
+                </button>
+              )}
+
             </div>
 
             <div className="legendContainer">
@@ -695,82 +737,275 @@ function GestionarReservas() {
       )}
 
       {showConsultar && (
-  <div className="modalOverlay">
-    <div className="modalBox">
-      <h3>Consultar Disponibilidad</h3>
+        <div className="modalOverlay">
+          <div className="modalBox">
+            <h3>Consultar Disponibilidad</h3>
 
-      <div className="modalField">
+            <div className="modalField">
 
-        <div className="fieldRow">
-          <label>Sala</label>
-          <select
-            value={salaConsulta}
-            onChange={(e) => setSalaConsulta(e.target.value)}
-          >
-            <option value="">-- Selecciona sala --</option>
-            {salas.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nombre || s.id}
-              </option>
-            ))}
-          </select>
+              <div className="fieldRow">
+                <label>Sala</label>
+                <select
+                  value={salaConsulta}
+                  onChange={(e) => setSalaConsulta(e.target.value)}
+                >
+                  <option value="">-- Selecciona sala --</option>
+                  {salas.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.nombre || s.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="fieldRow">
+                <label>Fecha</label>
+                <input
+                  type="date"
+                  value={fechaConsulta}
+                  onChange={(e) => setFechaConsulta(e.target.value)}
+                />
+              </div>
+
+            </div>
+
+            <button className="modalPrimaryBtn" onClick={generarDisponibilidad}>
+              Consultar
+            </button>
+
+            {disponibilidad.length > 0 && (
+              <div className="disponibilidadWrapper">
+
+              <div className="disponibilidadGrid">
+                {disponibilidad.map((bloque, i) => (
+                  <div
+                    key={i}
+                    className={`bloqueHora ${
+                      bloque.estado === "OCUPADO" ? "ocupado" : "disponible"
+                    }`}
+                    title={`${bloque.hora} → ${bloque.estado}`}
+                  />
+                ))}
+              </div>
+
+              <div className="horasLabels">
+                {disponibilidad.map((bloque, i) =>
+                  i % 2 === 0 ? (
+                    <span key={i}>{bloque.hora}</span>
+                  ) : null
+                )}
+              </div>
+
+            </div>
+            )}
+
+            <button
+              className="modalCloseBtn"
+              onClick={() => {
+                setShowConsultar(false);
+                setDisponibilidad([]);
+                setSalaConsulta("");
+                setFechaConsulta("");
+              }}
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
-
-        <div className="fieldRow">
-          <label>Fecha</label>
-          <input
-            type="date"
-            value={fechaConsulta}
-            onChange={(e) => setFechaConsulta(e.target.value)}
-          />
-        </div>
-
-      </div>
-
-      <button className="modalPrimaryBtn" onClick={generarDisponibilidad}>
-        Consultar
-      </button>
-
-      {disponibilidad.length > 0 && (
-        <div className="disponibilidadWrapper">
-
-        <div className="disponibilidadGrid">
-          {disponibilidad.map((bloque, i) => (
-            <div
-              key={i}
-              className={`bloqueHora ${
-                bloque.estado === "OCUPADO" ? "ocupado" : "disponible"
-              }`}
-              title={`${bloque.hora} → ${bloque.estado}`}
-            />
-          ))}
-        </div>
-
-        <div className="horasLabels">
-          {disponibilidad.map((bloque, i) =>
-            i % 2 === 0 ? (
-              <span key={i}>{bloque.hora}</span>
-            ) : null
-          )}
-        </div>
-
-      </div>
       )}
 
-      <button
-        className="modalCloseBtn"
-        onClick={() => {
-          setShowConsultar(false);
-          setDisponibilidad([]);
-          setSalaConsulta("");
-          setFechaConsulta("");
-        }}
-      >
-        Cerrar
-      </button>
-    </div>
-  </div>
-)}
+      {showHistorial && (
+        <div className="modalOverlay">
+
+          <div className="historialModal">
+
+            {/* HEADER */}
+            <div className="historialHeader">
+              <h3 className="historialTitle">
+                Historial de Reservas
+              </h3>
+
+              <button
+                className="historialCloseBtn"
+                onClick={() => setShowHistorial(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* FILTROS */}
+            <div className="historialFilters">
+
+              <div className="historialFiltersGrid">
+
+                <div className="historialField">
+                  <label>Sala</label>
+
+                  <select
+                    className="historialInput"
+                    value={filtroSala}
+                    onChange={(e) => setFiltroSala(e.target.value)}
+                  >
+                    <option value="">Todas</option>
+
+                    {salas.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nombre || s.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="historialField">
+                  <label>Estado</label>
+
+                  <select
+                    className="historialInput"
+                    value={filtroEstado}
+                    onChange={(e) => setFiltroEstado(e.target.value)}
+                  >
+                    <option value="">Todos</option>
+                    <option value="ACTIVA">ACTIVA</option>
+                    <option value="CANCELADA">CANCELADA</option>
+                  </select>
+                </div>
+
+                <div className="historialField">
+                  <label>Fecha Inicio</label>
+
+                  <input
+                    className="historialInput"
+                    type="date"
+                    value={filtroFechaInicio}
+                    onChange={(e) => setFiltroFechaInicio(e.target.value)}
+                  />
+                </div>
+
+                <div className="historialField">
+                  <label>Fecha Fin</label>
+
+                  <input
+                    className="historialInput"
+                    type="date"
+                    value={filtroFechaFin}
+                    onChange={(e) => setFiltroFechaFin(e.target.value)}
+                  />
+                </div>
+
+              </div>
+
+              <div className="historialButtons">
+
+                <button
+                  className="historialBtn historialBtnBuscar"
+                  onClick={async () => {
+                    try {
+
+                      const params = {};
+
+                      if (filtroSala) params.idSala = filtroSala;
+                      if (filtroEstado) params.estado = filtroEstado;
+                      if (filtroFechaInicio) params.fechaInicio = filtroFechaInicio;
+                      if (filtroFechaFin) params.fechaFin = filtroFechaFin;
+
+                      const res = await axios.get(
+                        `${API_URL}/reservas/historial/facultad`,
+                        { params }
+                      );
+
+                      setHistorialReservas(res.data);
+
+                    } catch (error) {
+                      console.error(error);
+                      alert("Error al consultar historial");
+                    }
+                  }}
+                >
+                  Buscar
+                </button>
+
+              </div>
+            </div>
+
+            {/* TABLA */}
+            <div className="historialTableContainer">
+
+              {historialReservas.length === 0 ? (
+
+                <div className="historialEmpty">
+                  <span style={{ fontSize: "32px" }}>🗂️</span>
+                  <p>No hay reservas</p>
+                </div>
+
+              ) : (
+
+                <table className="historialTable">
+
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Sala</th>
+                      <th>Inicio</th>
+                      <th>Fin</th>
+                      <th>Estado</th>
+                      <th>Usuario</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    {historialReservas.map((r) => (
+
+                      <tr key={r.id}>
+
+                        <td>{r.id}</td>
+
+                        <td>
+                          {
+                            salas.find(s => s.id == r.idSala)?.nombre || r.idSala
+                          }
+                        </td>
+
+                        <td>
+                          {new Date(r.fechaInicio).toLocaleString()}
+                        </td>
+
+                        <td>
+                          {new Date(r.fechaFin).toLocaleString()}
+                        </td>
+
+                        <td>
+                          <span className={
+                            r.estado === "ACTIVA"
+                              ? "estadoBadge estadoActiva"
+                              : "estadoBadge estadoCancelada"
+                          }>
+                            {r.estado}
+                          </span>
+                        </td>
+
+                        <td>
+                          {
+                            usuarios.find(u => u.id == r.idUsuario)?.correo || r.idUsuario
+                          }
+                        </td>
+
+                      </tr>
+
+                    ))}
+
+                  </tbody>
+
+                </table>
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
       <div className="footergr">
         <Link to="/Secretaria">

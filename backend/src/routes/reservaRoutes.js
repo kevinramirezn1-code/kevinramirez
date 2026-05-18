@@ -18,6 +18,10 @@ router.post('/', reservaController.crear);
 router.get('/', reservaController.listar);
 
 // 🔹 OBTENER POR ID
+
+// 🔹 HISTORIAL FACULTAD
+router.get('/historial/facultad', reservaController.historialFacultad);
+
 router.get('/:id',
   param('id').isInt(),
   validar,

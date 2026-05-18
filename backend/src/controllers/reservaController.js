@@ -135,6 +135,33 @@ exports.actualizar = async (req, res, next) => {
   }
 };
 
+// 🔹 HISTORIAL FACULTAD (HU-13)
+exports.historialFacultad = async (req, res, next) => {
+  try {
+    const { idSala, estado, fechaInicio, fechaFin } = req.query;
+
+    const estadosValidos = ['ACTIVA', 'CANCELADA', 'FINALIZADA'];
+
+    if (estado && !estadosValidos.includes(estado)) {
+      return res.status(400).json({
+        error: 'Estado inválido. Use ACTIVA, CANCELADA o FINALIZADA'
+      });
+    }
+
+    const reservas = await reservaService.historialFacultad({
+      idSala,
+      estado,
+      fechaInicio,
+      fechaFin
+    });
+
+    res.json(reservas.map(r => new ReservaDTO(r)));
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 🔹 CANCELAR 
 exports.cancelar = async (req, res, next) => {
   try {
