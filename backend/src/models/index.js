@@ -1,7 +1,6 @@
 const sequelize = require('../config/database');
 const { DataTypes } = require('sequelize');
 
-// 🔹 MODELOS
 const Facultad = require('./facultad')(sequelize, DataTypes);
 const Usuario = require('./usuario')(sequelize, DataTypes);
 const ListaBlanca = require('./listaBlanca')(sequelize, DataTypes);
@@ -10,7 +9,7 @@ const Reserva = require('./reserva')(sequelize, DataTypes);
 const Recurso = require('./recurso')(sequelize, DataTypes);
 const SalaRecurso = require('./salaRecurso')(sequelize, DataTypes);
 
-// 🔹 DB
+// ✅ DEFINE db PRIMERO
 const db = {
   sequelize,
   Sequelize: require('sequelize'),
@@ -23,33 +22,33 @@ const db = {
   SalaRecurso
 };
 
-// =========================
-// 🔥 RELACIONES (SIN DUPLICADOS)
-// =========================
+// 🔥 RELACIONES
 
-// Facultad -> Sala
 Facultad.hasMany(Sala, {
-  foreignKey: 'facultad_id',
-  as: 'salas'
+  foreignKey: 'facultad_id'
 });
 
 Sala.belongsTo(Facultad, {
-  foreignKey: 'facultad_id',
-  as: 'facultad'
+  foreignKey: 'facultad_id'
 });
 
-// Facultad -> Usuario
+Sala.hasMany(Reserva, {
+  foreignKey: 'idSala'
+});
+
+
+Reserva.belongsTo(Sala, {
+  foreignKey: 'idSala'
+});
+
 Facultad.hasMany(Usuario, {
-  foreignKey: 'idFacultad',
-  as: 'usuarios'
+  foreignKey: 'idFacultad'
 });
 
 Usuario.belongsTo(Facultad, {
-  foreignKey: 'idFacultad',
-  as: 'facultad'
+  foreignKey: 'idFacultad'
 });
 
-// Usuario -> Reserva
 Usuario.hasMany(Reserva, {
   foreignKey: 'idUsuario',
   as: 'reservas'
@@ -60,15 +59,21 @@ Reserva.belongsTo(Usuario, {
   as: 'usuario'
 });
 
-// Sala -> Reserva
+Reserva.belongsTo(Sala, {
+  foreignKey: 'idSala',
+  as: 'sala'
+});
+
 Sala.hasMany(Reserva, {
   foreignKey: 'idSala',
   as: 'reservas'
 });
 
-Reserva.belongsTo(Sala, {
-  foreignKey: 'idSala',
-  as: 'sala'
+// 🔥 AHORA SÍ puedes usar db
+Object.keys(db).forEach(modelName => {
+  if (db[modelName] && db[modelName].associate) {
+    db[modelName].associate(db);
+  }
 });
 
 // 🔥 MANY TO MANY
@@ -82,11 +87,7 @@ Sala.belongsToMany(Recurso, {
 Recurso.belongsToMany(Sala, {
   through: SalaRecurso,
   foreignKey: 'id_recurso',
-  otherKey: 'id_sala',
-  as: 'salas'
+  otherKey: 'id_sala'
 });
 
-// =========================
-// 🔥 EXPORT
-// =========================
 module.exports = db;
