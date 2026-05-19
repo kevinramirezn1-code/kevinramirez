@@ -1,0 +1,251 @@
+.reportesContainer {
+  min-height: 100vh;
+  width: 100%;
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7fa 0%,
+      #e9edf5 100%
+    );
+  overflow-x: hidden;
+}
+
+.mainContent {
+  margin-top: 80px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcomeSection {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.titulo {
+  font-size: 3rem;
+  color: #1e3c72;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.subtitulo {
+  font-size: 1.2rem;
+  color: #475569;
+}
+
+.linea {
+  width: 100px;
+  height: 4px;
+  margin: 1.5rem auto;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      90deg,
+      #0075b1,
+      #6c63ff
+    );
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tab {
+  padding: 1rem 1.8rem;
+  border: none;
+  border-radius: 14px;
+  background: white;
+  color: #1e3c72;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow:
+    0 4px 10px
+    rgba(0,0,0,0.05);
+}
+
+.tab:hover {
+  transform: translateY(-3px);
+}
+
+.tab.active {
+  background:
+    linear-gradient(
+      135deg,
+      #0075b1,
+      #6c63ff
+    );
+  color: white;
+  box-shadow:
+    0 10px 25px
+    rgba(37,99,235,0.3);
+}
+
+.reportesCard {
+  width: 100%;
+  max-width: 1000px;
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow:
+    0 10px 30px
+    rgba(0,0,0,0.08);
+}
+
+.reportesFiltros {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.campoFiltro {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.campoFiltro label {
+  margin-bottom: 0.8rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.campoFiltro input {
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  outline: none;
+}
+
+.campoFiltro input:focus {
+  border-color: #2563eb;
+}
+
+.btnGenerar {
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      #0075b1,
+      #6c63ff
+    );
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-bottom: 2rem;
+}
+
+.btnGenerar:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 20px
+    rgba(37,99,235,0.3);
+}
+
+.tablaContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tablaReportes {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tablaReportes th {
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: left;
+  color: #1e293b;
+}
+
+.tablaReportes td {
+  padding: 1rem;
+  border-top:
+    1px solid #e2e8f0;
+}
+
+.badgeHoras {
+  background: linear-gradient(
+    135deg,
+    #0075b1,
+    #6c4cff
+  );
+  color: white;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+}
+
+.sinDatos {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+
+.placeholderTab {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+@media (max-width:768px) {
+
+  .titulo {
+    font-size: 2.2rem;
+  }
+
+  .reportesCard {
+    padding: 1.5rem;
+  }
+
+  .tabsContainer {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+  }
+
+}
+
+.btnPDF {
+  margin-top: 15px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    #ff4b4b,
+    #d90429
+  );
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btnPDF:hover {
+  transform: translateY(-2px);
+}

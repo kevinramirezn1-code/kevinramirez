@@ -7,6 +7,7 @@ import InicioDocente from '../pages/InicioDocente';
 import InicioSecretaria from '../pages/InicioSecretaria';
 import GestionarReservas from '../pages/GestionarReservas';
 import GestionarSalas from '../pages/GestionarSalas';
+import Reportes from '../pages/Reportes';
 
 const AppRouter = () => {
   const { user, loading } = useAuth();
@@ -36,6 +37,11 @@ const AppRouter = () => {
       <Route
         path="/inicio/GestionarReservas"
         element={user ? <GestionarReservas /> : <Navigate to="/login" />}
+      />
+
+      <Route
+        path="/inicio/Reportes"
+        element={user ? <Reportes /> : <Navigate to="/login" />}
       />
 
       <Route path="*" element={<Navigate to="/" />} />

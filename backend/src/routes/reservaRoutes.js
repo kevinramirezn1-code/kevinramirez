@@ -22,6 +22,12 @@ router.get('/', reservaController.listar);
 // 🔹 HISTORIAL FACULTAD
 router.get('/historial/facultad', reservaController.historialFacultad);
 
+// 🔹 REPORTE RESERVAS
+router.get(
+  '/reportes/reservas',
+  reservaController.reporteReservas
+);
+
 router.get(
   '/reportes/docentes',
   reservaController.reporteUsoDocentes

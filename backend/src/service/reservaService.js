@@ -254,6 +254,57 @@ class ReservaService {
     return Object.values(reporte);
   }
 
+  async reporteReservas({
+    numeroReservas
+  } = {}) {
+
+    const reservas =
+      await Reserva.findAll({
+        where: {
+          estado: 'ACTIVA'
+        }
+      });
+
+    const resultado = {};
+
+    reservas.forEach(r => {
+
+      if (
+        !resultado[
+          r.idSala
+        ]
+      ) {
+
+        resultado[
+          r.idSala
+        ] = 0;
+
+      }
+
+      resultado[
+        r.idSala
+      ] += 1;
+
+    });
+
+    return Object
+    .entries(resultado)
+    .filter(([sala,total]) =>
+
+      total >= numeroReservas
+
+    )
+    .map(([sala,total]) => ({
+
+      sala,
+
+      numeroReservas:
+        total
+
+    }));
+
+  }
+
   async eliminar(id) {
     const reserva = await this.obtenerPorId(id);
 

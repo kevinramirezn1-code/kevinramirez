@@ -3,6 +3,7 @@ const cors = require('cors');
 const session = require('express-session'); // <-- Importar
 const facultadRoutes = require('./routes/facultadRoutes');
 const authRoutes = require('./routes/authRoutes');
+const reservaRoutes = require('./routes/reservaRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(session({
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/facultades', facultadRoutes);
+app.use('/reservas', reservaRoutes);
 
 // Manejador de errores
 app.use((err, req, res, next) => {

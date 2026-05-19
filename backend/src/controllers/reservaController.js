@@ -162,6 +162,77 @@ exports.historialFacultad = async (req, res, next) => {
   }
 };
 
+// 🔹 REPORTE POR NÚMERO DE RESERVAS
+exports.reporteReservas =
+async (req,res,next) => {
+
+  try {
+
+    const {
+      numeroReservas
+    } = req.query;
+
+    if (
+      !numeroReservas
+    ) {
+
+      return res.status(400)
+      .json({
+
+        error:
+        'Debe ingresar un número de reservas'
+
+      });
+
+    }
+
+    if (
+      Number(numeroReservas) < 1
+    ) {
+
+      return res.status(400)
+      .json({
+
+        error:
+        'El número debe ser mayor a cero'
+
+      });
+
+    }
+
+    const reporte =
+      await reservaService
+      .reporteReservas({
+
+        numeroReservas:
+        Number(numeroReservas)
+
+      });
+
+    if (
+      reporte.length === 0
+    ) {
+
+      return res.status(404)
+      .json({
+
+        error:
+        'No hay reservas con ese número ingresado'
+
+      });
+
+    }
+
+    res.json(reporte);
+
+  } catch(error) {
+
+    next(error);
+
+  }
+
+};
+
 // 🔹 REPORTE USO DOCENTES
 exports.reporteUsoDocentes = async (req, res, next) => {
   try {
