@@ -204,7 +204,6 @@
 
 .placeholderTab {
   text-align: center;
-  padding: 4rem;
   font-size: 1.2rem;
   color: #64748b;
 }
@@ -248,4 +247,205 @@
 
 .btnPDF:hover {
   transform: translateY(-2px);
+}
+
+/* =========================
+   HISTORIAL
+========================= */
+
+.historialContainer {
+  width: 100%;
+  padding: 10px 0;
+}
+
+.tituloHistorial {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 30px;
+}
+
+/* =========================
+   FILTROS
+========================= */
+
+.filtrosHistorial {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.campoFecha {
+  display: flex;
+  flex-direction: column;
+}
+
+.campoFecha label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.campoFecha input {
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  font-size: 15px;
+  min-width: 220px;
+  transition: all 0.25s ease;
+}
+
+.campoFecha input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================
+   BOTONES
+========================= */
+
+.botonesHistorial {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  justify-content: centerS;
+  flex-wrap: wrap;
+  margin-bottom: 35px;
+}
+
+.btnGenerarHistorial,
+.btnPDFHistorial {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* BOTON GENERAR */
+
+.btnGenerarHistorial {
+  background: #2563eb;
+  color: white;
+}
+
+.btnGenerarHistorial:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* BOTON PDF */
+
+.btnPDFHistorial {
+  background: #dc2626;
+  color: white;
+}
+
+.btnPDFHistorial:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+/* =========================
+   TABLAS
+========================= */
+
+.tablaSeccion {
+  margin-bottom: 40px;
+}
+
+.tituloTabla {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 15px;
+}
+
+.tablaReportes {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.tablaReportes thead {
+  background: #2563eb;
+  color: white;
+}
+
+.tablaReportes th {
+  padding: 16px;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tablaReportes td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+  color: #334155;
+}
+
+.tablaReportes tbody tr {
+  transition: background 0.2s ease;
+}
+
+.tablaReportes tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* =========================
+   SIN DATOS
+========================= */
+
+.sinDatosHistorial {
+  width: 100%;
+  padding: 35px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  text-align: center;
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+  .filtrosHistorial {
+    flex-direction: column;
+  }
+
+  .campoFecha input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .botonesHistorial {
+    flex-direction: column;
+  }
+
+  .btnGenerarHistorial,
+  .btnPDFHistorial {
+    width: 100%;
+  }
+
+  .tablaReportes {
+    display: block;
+    overflow-x: auto;
+  }
+
 }
