@@ -1,4 +1,4 @@
-const { Reserva } = require('../models');
+const { Reserva, Usuario, Sala } = require('../models');
 const { Op } = require('sequelize');
 
 class ReservaService {
@@ -68,6 +68,190 @@ class ReservaService {
       where,
       order: [['fechaInicio', 'DESC']]
     });
+  }
+
+  async reporteUsoDocentes({ fechaInicio, fechaFin }) {
+
+    const where = {
+      estado: 'ACTIVA'
+    };
+
+    if (fechaInicio || fechaFin) {
+
+      where.fechaInicio = {};
+
+      if (fechaInicio) {
+        where.fechaInicio[Op.gte] =
+          new Date(`${fechaInicio}T00:00:00`);
+      }
+
+      if (fechaFin) {
+        where.fechaInicio[Op.lte] =
+          new Date(`${fechaFin}T23:59:59`);
+      }
+    }
+
+    const reservas = await Reserva.findAll({
+      where,
+      include: [
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'correo']
+        }
+      ]
+    });
+
+    const reporte = {};
+
+    reservas.forEach(r => {
+
+      const horas =
+        (new Date(r.fechaFin) - new Date(r.fechaInicio))
+        / (1000 * 60 * 60);
+
+      const id = r.idUsuario;
+
+      if (!reporte[id]) {
+        reporte[id] = {
+          docente: r.usuario?.correo || id,
+          horas: 0,
+          reservas: 0
+        };
+      }
+
+      reporte[id].horas += horas;
+      reporte[id].reservas += 1;
+    });
+
+    return Object.values(reporte);
+  }
+
+  async reporteUsoSalas({ fechaInicio, fechaFin }) {
+
+    const where = {
+      estado: 'ACTIVA'
+    };
+
+    if (fechaInicio || fechaFin) {
+
+      where.fechaInicio = {};
+
+      if (fechaInicio) {
+        where.fechaInicio[Op.gte] =
+          new Date(`${fechaInicio}T00:00:00`);
+      }
+
+      if (fechaFin) {
+        where.fechaInicio[Op.lte] =
+          new Date(`${fechaFin}T23:59:59`);
+      }
+    }
+
+    const reservas = await Reserva.findAll({
+      where,
+      include: [
+        {
+          model: Sala,
+          as: 'sala'
+        }
+      ]
+    });
+
+    const reporte = {};
+
+    reservas.forEach(r => {
+
+      const horas =
+        (new Date(r.fechaFin) - new Date(r.fechaInicio))
+        / (1000 * 60 * 60);
+
+      const id = r.idSala;
+
+      if (!reporte[id]) {
+        reporte[id] = {
+          sala: r.sala?.nombre || id,
+          horas: 0,
+          reservas: 0
+        };
+      }
+
+      reporte[id].horas += horas;
+      reporte[id].reservas += 1;
+    });
+
+    return Object.values(reporte);
+  }
+
+  async reporteOcupacionSalas({ fechaInicio, fechaFin }) {
+
+    const where = {
+      estado: 'ACTIVA'
+    };
+
+    if (fechaInicio || fechaFin) {
+
+      where.fechaInicio = {};
+
+      if (fechaInicio) {
+        where.fechaInicio[Op.gte] =
+          new Date(`${fechaInicio}T00:00:00`);
+      }
+
+      if (fechaFin) {
+        where.fechaInicio[Op.lte] =
+          new Date(`${fechaFin}T23:59:59`);
+      }
+    }
+
+    const reservas = await Reserva.findAll({
+      where,
+      include: [
+        {
+          model: Sala,
+          as: 'sala'
+        }
+      ]
+    });
+
+    const reporte = {};
+
+    reservas.forEach(r => {
+
+      const horas =
+        (new Date(r.fechaFin) - new Date(r.fechaInicio))
+        / (1000 * 60 * 60);
+
+      const id = r.idSala;
+
+      if (!reporte[id]) {
+        reporte[id] = {
+          sala: r.sala?.nombre || id,
+          horasOcupadas: 0
+        };
+      }
+
+      reporte[id].horasOcupadas += horas;
+    });
+
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    const dias =
+      Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24)) + 1;
+
+    const horasDisponibles = dias * 14.5;
+
+    Object.values(reporte).forEach(r => {
+
+      r.horasDisponibles = horasDisponibles;
+
+      r.porcentaje =
+        ((r.horasOcupadas / horasDisponibles) * 100)
+        .toFixed(2);
+    });
+
+    return Object.values(reporte);
   }
 
   async eliminar(id) {

@@ -162,6 +162,48 @@ exports.historialFacultad = async (req, res, next) => {
   }
 };
 
+// 🔹 REPORTE USO DOCENTES
+exports.reporteUsoDocentes = async (req, res, next) => {
+  try {
+
+    const reporte =
+      await reservaService.reporteUsoDocentes(req.query);
+
+    res.json(reporte);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 🔹 REPORTE USO SALAS
+exports.reporteUsoSalas = async (req, res, next) => {
+  try {
+
+    const reporte =
+      await reservaService.reporteUsoSalas(req.query);
+
+    res.json(reporte);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 🔹 REPORTE OCUPACIÓN
+exports.reporteOcupacionSalas = async (req, res, next) => {
+  try {
+
+    const reporte =
+      await reservaService.reporteOcupacionSalas(req.query);
+
+    res.json(reporte);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 🔹 CANCELAR 
 exports.cancelar = async (req, res, next) => {
   try {
