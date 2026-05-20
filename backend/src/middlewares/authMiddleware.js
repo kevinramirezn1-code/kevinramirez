@@ -1,14 +1,14 @@
 module.exports = (...rolesPermitidos) => {
   return (req, res, next) => {
 
-    // 🔐 Verificar sesión
-    if (!req.session || !req.session.user) {
+    // 🔐 Verificar autenticación JWT
+    if (!req.user) {
       return res.status(401).json({
         message: ['No autenticado']
       });
     }
 
-    const usuario = req.session.user;
+    const usuario = req.user;
 
     // 🔐 Verificar rol
     if (!rolesPermitidos.includes(usuario.rol)) {
@@ -17,9 +17,7 @@ module.exports = (...rolesPermitidos) => {
       });
     }
 
-    // 🔥 adjuntar usuario
-    req.user = usuario;
-
+    // 🔥 adjuntar usuario (already set by JWT middleware)
     next();
   };
 };

@@ -1,5 +1,6 @@
 const authService = require('../service/authService');
 const UsuarioDTO = require('../dtos/usuarioDTO');
+const jwt = require('jsonwebtoken');
 
 class AuthController {
 
@@ -10,11 +11,29 @@ class AuthController {
       const result = await authService.login(correo, contraseña);
 
       const userDTO = new UsuarioDTO(result.usuario);
-      req.session.user = userDTO;
+
+      // Generate JWT token
+      const secret = process.env.JWT_SECRET || 'tu_secreto_jwt_super_seguro_cambiar_en_produccion';
+      const token = jwt.sign(
+        {
+          id: userDTO.id,
+          correo: userDTO.correo,
+          rol: userDTO.rol,
+          idFacultad: userDTO.idFacultad,
+          facultad_nombre: userDTO.facultad_nombre,
+          facultad: {
+            id: userDTO.idFacultad,
+            nombre: userDTO.facultad_nombre
+          }
+        },
+        secret,
+        { expiresIn: '8h' } // Same duration as previous session
+      );
 
       res.json({
         message: ['Login exitoso'],
-        user: userDTO
+        user: userDTO,
+        token: token
       });
 
     } catch (error) {
@@ -54,9 +73,8 @@ class AuthController {
 
   async logout(req, res) {
     try {
-      req.session.destroy(() => {
-        res.json({ message: ['Sesión cerrada'] });
-      });
+      // JWT is stateless, so logout is handled client-side by removing the token
+      res.json({ message: ['Sesión cerrada'] });
     } catch (error) {
       res.status(500).json({ message: ['Error al cerrar sesión'] });
     }
@@ -64,14 +82,14 @@ class AuthController {
 
   async me(req, res) {
     try {
-      if (!req.session.user) {
+      if (!req.user) {
         return res.status(401).json({
           message: ['No autenticado']
         });
       }
 
       res.json({
-        user: req.session.user
+        user: req.user
       });
 
     } catch (error) {

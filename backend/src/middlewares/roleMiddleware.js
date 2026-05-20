@@ -1,20 +1,23 @@
-const authorize = (...rolesPermitidos) => {
+module.exports = (...rolesPermitidos) => {
   return (req, res, next) => {
 
-    if (!req.session || !req.session.user) {
-      return res.status(401).json({ error: 'No autenticado' });
+    // 🔐 Verificar autenticación JWT
+    if (!req.user) {
+      return res.status(401).json({
+        message: ['No autenticado']   // 🔥 Formato array como en authController
+      });
     }
 
-    const usuario = req.session.user;
+    const usuario = req.user;
 
+    // 🔐 Verificar rol
     if (!rolesPermitidos.includes(usuario.rol)) {
-      return res.status(403).json({ error: 'No tienes permisos' });
+      return res.status(403).json({
+        message: ['No tienes permisos']
+      });
     }
 
-    req.user = usuario;
-
+    // 🔥 adjuntar usuario (already set by JWT middleware)
     next();
   };
 };
-
-module.exports = authorize;

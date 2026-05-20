@@ -1,11 +1,12 @@
 const { Usuario, Facultad, ListaBlanca } = require('../models');
-const UsuarioDTO = require('../dtos/usuarioDTO'); // 🔥 IMPORTANTE
+const UsuarioDTO = require('../dtos/usuarioDTO');
+const bcrypt = require('bcryptjs');
 
 class AuthService {
 
   async register({ correo, contraseña, idFacultad }) {
 
-    // 🔥 VALIDACIÓN CENTRALIZADA EN DTO
+    // 🔥 VALIDACIÓN CENTRALIZADA EN DTO (incluye validación de @uao.edu.co)
     const errores = UsuarioDTO.validarCrear({ correo, contraseña, idFacultad });
     if (errores.length > 0) {
       throw { status: 400, message: errores };
@@ -24,9 +25,13 @@ class AuthService {
     const enListaBlanca = await ListaBlanca.findOne({ where: { correo } });
     const rol = enListaBlanca ? 'secretaria' : 'docente';
 
+    // HASHEAR CONTRASEÑA
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(contraseña, salt);
+
     const nuevoUsuario = await Usuario.create({
       correo,
-      contraseña,
+      contraseña: hashedPassword,
       rol,
       idFacultad
     });
@@ -34,6 +39,7 @@ class AuthService {
     const usuarioConFacultad = await Usuario.findByPk(nuevoUsuario.id, {
       include: {
         model: Facultad,
+        as: 'facultad',
         attributes: ['id', 'nombre']
       }
     });
@@ -55,6 +61,7 @@ class AuthService {
       where: { correo },
       include: {
         model: Facultad,
+        as: 'facultad',
         attributes: ['id', 'nombre']
       }
     });
@@ -63,7 +70,8 @@ class AuthService {
       throw { status: 400, message: 'Credenciales inválidas' };
     }
 
-    if (usuario.contraseña !== contraseña) {
+    const passwordValida = await bcrypt.compare(contraseña, usuario.contraseña);
+    if (!passwordValida) {
       throw { status: 400, message: 'Credenciales inválidas' };
     }
 

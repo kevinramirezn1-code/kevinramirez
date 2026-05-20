@@ -2,7 +2,16 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import {
+  getSalas,
+  getUsuarios,
+  getDocentesPorFacultad,
+  getReservas,
+  createReserva,
+  updateReserva,
+  cancelReserva,
+  getHistorialFacultad,
+} from "../services/api";
 import '../styles/GestionarReservas.css';
 import devolver from '../assets/images/devolver.png';
 
@@ -52,35 +61,30 @@ function GestionarReservas() {
   const [historialDocentePage, setHistorialDocentePage] = useState(1);
   const HISTORIAL_PAGE_SIZE = 7;
 
-  const API_URL = "http://localhost:3001/api";
-
   const opcionesHora = [];
 
-    for (let minutos = 7 * 60; minutos <= 21 * 60 + 30; minutos += 30) {
-      const h24 = Math.floor(minutos / 60);
-      const m = minutos % 60;
+  for (let minutos = 7 * 60; minutos <= 21 * 60 + 30; minutos += 30) {
+    const h24 = Math.floor(minutos / 60);
+    const m = minutos % 60;
 
-      const ampm = h24 >= 12 ? "PM" : "AM";
-      let h = h24 % 12;
-      if (h === 0) h = 12;
+    const ampm = h24 >= 12 ? "PM" : "AM";
+    let h = h24 % 12;
+    if (h === 0) h = 12;
 
-      opcionesHora.push(`${h}:${m === 0 ? "00" : "30"} ${ampm}`);
-    }
-  
+    opcionesHora.push(`${h}:${m === 0 ? "00" : "30"} ${ampm}`);
+  }
+
   const generarDisponibilidad = async () => {
     if (!salaConsulta) return alert("Selecciona una sala");
     if (!fechaConsulta) return alert("Selecciona una fecha");
 
     try {
-      const res = await axios.get(
-        `${API_URL}/reservas?fecha=${fechaConsulta}`
-      );
+      const reservas = await getReservas({ fecha: fechaConsulta });
 
-      const reservasSala = res.data.filter(
+      const reservasSala = reservas.filter(
         r => r.idSala == salaConsulta
       );
 
-      // ✅ FIX REAL SIN DESFASE
       const getMinutosDesdeISO = (fechaISO) => {
         const fecha = new Date(fechaISO);
         return fecha.getHours() * 60 + fecha.getMinutes();
@@ -152,8 +156,8 @@ function GestionarReservas() {
 
     try {
       const fechaStr = fecha.toLocaleDateString('en-CA');
-      const res = await axios.get(`${API_URL}/reservas?fecha=${fechaStr}`);
-      setReservasDelDia(res.data);
+      const data = await getReservas({ fecha: fechaStr });
+      setReservasDelDia(data);
     } catch (error) {
       console.error("Error al obtener reservas del día:", error);
       setReservasDelDia([]);
@@ -168,11 +172,8 @@ function GestionarReservas() {
   useEffect(() => {
     const fetchSalas = async () => {
       try {
-        const res = await axios.get(`${API_URL}/salas`, {
-          withCredentials: true // 🔥 ESTO ES LO QUE TE FALTA
-        });
-
-        setSalas(res.data); // 🔥 ya vienen filtradas desde backend
+        const data = await getSalas();
+        setSalas(data);
       } catch (error) {
         console.error("Error al obtener salas:", error);
       }
@@ -182,24 +183,19 @@ function GestionarReservas() {
   }, []);
 
   useEffect(() => {
+    if (user?.rol?.toLowerCase() !== "secretaria") return;
+
     const fetchUsuarios = async () => {
       try {
-
-        const res = await axios.get(
-          `${API_URL}/usuarios`,
-          { withCredentials: true }
-        );
-
-        setUsuarios(res.data.items);
-
+        const data = await getUsuarios();
+        setUsuarios(data.items);
       } catch (error) {
         console.error("Error cargando usuarios", error);
       }
     };
 
     fetchUsuarios();
-
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -207,12 +203,8 @@ function GestionarReservas() {
     if (user.rol?.toLowerCase() === "secretaria") {
       const fetchDocentes = async () => {
         try {
-          const res = await axios.get(
-            `${API_URL}/usuarios/docentes/mis-facultad`,
-            { withCredentials: true }
-          );
-
-          setDocentes(res.data);
+          const data = await getDocentesPorFacultad();
+          setDocentes(data);
         } catch (error) {
           console.error("Error cargando docentes", error);
         }
@@ -310,110 +302,42 @@ function GestionarReservas() {
   };
 
   const handleCrearReserva = async () => {
-    if (!selectedDate) {
-      return alert("Debes seleccionar un día primero");
-    }
+    if (!selectedDate) return alert("Debes seleccionar un día primero");
+    if (selectedDate.getDay() === 0) return alert("No se pueden crear reservas los domingos");
+    if (!salaSeleccionada) return alert("Debes seleccionar una sala");
+    if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
 
-    // ✅ VALIDAR FECHAS SIN DESFASE
-    const hoy = new Date();
-
-    const hoySoloFecha = new Date(
-      hoy.getFullYear(),
-      hoy.getMonth(),
-      hoy.getDate()
-    );
-
-    const fechaSeleccionadaSolo = new Date(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth(),
-      selectedDate.getDate()
-    );
-
-    if (fechaSeleccionadaSolo < hoySoloFecha) {
-      return alert("No puedes crear reservas en fechas anteriores");
-    }
-
-    // ❌ DOMINGOS
-    if (selectedDate.getDay() === 0) {
-      return alert("No se pueden crear reservas los domingos");
-    }
-
-    // ❌ SALA
-    if (!salaSeleccionada) {
-      return alert("Debes seleccionar una sala");
-    }
-
-    // ❌ HORAS
-    if (!horaInicio || !horaFin) {
-      return alert("Debes seleccionar hora inicio y fin");
-    }
-
-    // ❌ DOCENTE
-    if (
-      user?.rol?.toLowerCase() === "secretaria" &&
-      !docenteSeleccionado
-    ) {
+    if (user.rol?.toLowerCase() === "secretaria" && !docenteSeleccionado) {
       return alert("Debes seleccionar un docente");
     }
 
     try {
-
       const inicio = formatoHora(horaInicio);
       const fin = formatoHora(horaFin);
-
       const fechaInicio = new Date(selectedDate);
       fechaInicio.setHours(inicio.h, inicio.m, 0, 0);
-
       const fechaFin = new Date(selectedDate);
       fechaFin.setHours(fin.h, fin.m, 0, 0);
 
-      // ✅ VALIDAR HORA PASADA
-      const ahora = new Date();
-
-      if (fechaInicio < ahora) {
-        return alert("No puedes crear reservas en horas anteriores");
-      }
-
-      // ✅ VALIDAR FIN MAYOR QUE INICIO
-      if (fechaFin <= fechaInicio) {
-        return alert(
-          "La hora fin debe ser mayor que la hora inicio"
-        );
-      }
-
-      await axios.post(
-        `${API_URL}/reservas`,
-        {
-          fechaInicio,
-          fechaFin,
-          idUsuario:
-            user?.rol?.toLowerCase() === "docente"
-              ? user.id
-              : docenteSeleccionado,
-          idSala: salaSeleccionada
-        },
-        { withCredentials: true }
-      );
+      await createReserva({
+        fechaInicio,
+        fechaFin,
+        idUsuario: user.rol?.toLowerCase() === "docente" ? user.id : docenteSeleccionado,
+        idSala: salaSeleccionada,
+      });
 
       alert("Reserva creada correctamente");
-
       setShowCrear(false);
-
       limpiarFormulario();
-
       setDocenteSeleccionado("");
-
       await cargarReservasDelDia(selectedDate);
-
     } catch (error) {
-
       console.error("Error al crear reserva:", error);
-
-      alert(
+      const msg =
         error.response?.data?.error ||
         error.response?.data?.errores?.join("\n") ||
-        "Error al crear reserva"
-      );
+        "Error al crear reserva";
+      alert(msg);
     }
   };
 
@@ -433,10 +357,10 @@ function GestionarReservas() {
       const fechaFin = new Date(selectedDate);
       fechaFin.setHours(fin.h, fin.m, 0, 0);
 
-      await axios.put(`${API_URL}/reservas/${reservaSeleccionada.id}`, {
+      await updateReserva(reservaSeleccionada.id, {
         fechaInicio,
         fechaFin,
-        idSala: salaSeleccionada
+        idSala: salaSeleccionada,
       });
 
       alert("Reserva ajustada correctamente");
@@ -467,7 +391,7 @@ function GestionarReservas() {
     if (!confirmar) return;
 
     try {
-      await axios.delete(`${API_URL}/reservas/${reservaSeleccionada.id}`);
+      await cancelReserva(reservaSeleccionada.id);
       alert("Reserva cancelada correctamente");
       setReservaSeleccionada(null);
       await cargarReservasDelDia(selectedDate);
@@ -482,31 +406,32 @@ function GestionarReservas() {
   };
 
   // PAGINACIÓN HISTORIAL GENERAL
-const historialInicio = (historialPage - 1) * HISTORIAL_PAGE_SIZE;
-const historialFin = historialInicio + HISTORIAL_PAGE_SIZE;
+  const historialInicio = (historialPage - 1) * HISTORIAL_PAGE_SIZE;
+  const historialFin = historialInicio + HISTORIAL_PAGE_SIZE;
 
-const historialPaginado = historialReservas.slice(
-  historialInicio,
-  historialFin
-);
+  const historialPaginado = historialReservas.slice(
+    historialInicio,
+    historialFin
+  );
 
-const totalPaginasHistorial = Math.ceil(
-  historialReservas.length / HISTORIAL_PAGE_SIZE
-);
+  const totalPaginasHistorial = Math.ceil(
+    historialReservas.length / HISTORIAL_PAGE_SIZE
+  );
 
-// PAGINACIÓN HISTORIAL DOCENTE
-const docenteInicio =
-  (historialDocentePage - 1) * HISTORIAL_PAGE_SIZE;
+  // PAGINACIÓN HISTORIAL DOCENTE
+  const docenteInicio =
+    (historialDocentePage - 1) * HISTORIAL_PAGE_SIZE;
 
-const docenteFin =
-  docenteInicio + HISTORIAL_PAGE_SIZE;
+  const docenteFin =
+    docenteInicio + HISTORIAL_PAGE_SIZE;
 
-const historialDocentePaginado =
-  historialDocente.slice(docenteInicio, docenteFin);
+  const historialDocentePaginado =
+    historialDocente.slice(docenteInicio, docenteFin);
 
-const totalPaginasDocente = Math.ceil(
-  historialDocente.length / HISTORIAL_PAGE_SIZE
-);
+  const totalPaginasDocente = Math.ceil(
+    historialDocente.length / HISTORIAL_PAGE_SIZE
+  );
+
   return (
     <div className="grContainer">
       <NavbarGestionSalas userRole={user?.rol || ""} />
@@ -739,7 +664,6 @@ const totalPaginasDocente = Math.ceil(
                 </select>
               </div>
 
-              {/* 🔥 SOLO SECRETARIA VE ESTO */}
               {user?.rol?.toLowerCase() === "secretaria" && (
                 <div className="fieldRow">
                   <label>Docente:</label>
@@ -1002,14 +926,9 @@ const totalPaginasDocente = Math.ceil(
                       if (filtroFechaInicio) params.fechaInicio = filtroFechaInicio;
                       if (filtroFechaFin) params.fechaFin = filtroFechaFin;
 
-                      const res = await axios.get(
-                        `${API_URL}/reservas/historial/facultad`,
-                        { params }
-                      );
+                      const data = await getHistorialFacultad(params);
 
-                      setHistorialReservas(res.data);
-
-                      // 🔥 Reinicia página
+                      setHistorialReservas(data);
                       setHistorialPage(1);
 
                     } catch (error) {
@@ -1241,22 +1160,17 @@ const totalPaginasDocente = Math.ceil(
                         params.fechaFin = docenteFechaFin;
                       }
 
-                      const res = await axios.get(
-                        `${API_URL}/reservas/historial/docente`,
-                        { params }
+                      const res = await fetch(
+                        `http://localhost:3001/api/reservas/historial/docente?${new URLSearchParams(params)}`
                       );
+                      const data = await res.json();
 
-                      setHistorialDocente(res.data);
-
-                      // 🔥 reinicia página
+                      setHistorialDocente(data);
                       setHistorialDocentePage(1);
 
                     } catch (error) {
                       console.error(error);
-
-                      alert(
-                        "Error consultando historial"
-                      );
+                      alert("Error consultando historial");
                     }
                   }}
                 >
@@ -1417,7 +1331,7 @@ const totalPaginasDocente = Math.ceil(
       )}
 
       <div className="footergr">
-        <Link to="/Secretaria">
+        <Link to={user?.rol === 'secretaria' ? '/Secretaria' : '/docente'}>
           <img src={devolver} alt="devolver" className="devolvergr" />
         </Link>
       </div>

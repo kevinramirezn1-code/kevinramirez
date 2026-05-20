@@ -9,11 +9,32 @@ import GestionarReservas from '../pages/GestionarReservas';
 import GestionarSalas from '../pages/GestionarSalas';
 import Reportes from '../pages/Reportes';
 
-const AppRouter = () => {
+// Componente de protección genérico
+const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading) {
+    return <div className="loading">Cargando sesión...</div>;
+  }
 
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+// Ruta protegida por rol específico
+const RoleRoute = ({ children, allowedRole }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading">Cargando...</div>;
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.rol !== allowedRole) return <Navigate to="/login" replace />;
+
+  return children;
+};
+
+const AppRouter = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
@@ -21,29 +42,51 @@ const AppRouter = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* Rutas privadas (requieren autenticación) */}
+      {/* Rutas protegidas por rol */}
       <Route
         path="/docente"
-        element={user?.rol === 'docente' ? <InicioDocente /> : <Navigate to="/login" />}
+        element={
+          <RoleRoute allowedRole="docente">
+            <InicioDocente />
+          </RoleRoute>
+        }
       />
       <Route
         path="/secretaria"
-        element={user?.rol === 'secretaria' ? <InicioSecretaria /> : <Navigate to="/login" />}
+        element={
+          <RoleRoute allowedRole="secretaria">
+            <InicioSecretaria />
+          </RoleRoute>
+        }
       />
+
+      {/* Rutas genéricas (cualquier usuario autenticado) */}
       <Route
         path="/inicio/GestionarSala"
-        element={user ? <GestionarSalas /> : <Navigate to="/login" />}
+        element={
+          <PrivateRoute>
+            <GestionarSalas />
+          </PrivateRoute>
+        }
       />
       <Route
         path="/inicio/GestionarReservas"
-        element={user ? <GestionarReservas /> : <Navigate to="/login" />}
+        element={
+          <PrivateRoute>
+            <GestionarReservas />
+          </PrivateRoute>
+        }
       />
-
       <Route
         path="/inicio/Reportes"
-        element={user ? <Reportes /> : <Navigate to="/login" />}
+        element={
+          <PrivateRoute>
+            <Reportes />
+          </PrivateRoute>
+        }
       />
 
+      {/* Redirección por defecto */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

@@ -1,21 +1,23 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getFacultades } from '../services/api';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getFacultades } from "../services/api";
 import Navbar from "../components/Navbar";
 import "../styles/Signup.css";
 import avatar from "../assets/images/avatar.png";
-import visible from '../assets/images/visible.png';
-import privado from '../assets/images/privado.png';
+import visible from "../assets/images/visible.png";
+import privado from "../assets/images/privado.png";
 
 function Signup() {
-  const [correo, setCorreo] = useState('');
-  const [contraseña, setContraseña] = useState('');
-  const [idFacultad, setIdFacultad] = useState('');
+  const [correo, setCorreo] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [idFacultad, setIdFacultad] = useState("");
   const [facultades, setFacultades] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   useEffect(() => {
     const fetchFacultades = async () => {
@@ -23,7 +25,7 @@ function Signup() {
         const data = await getFacultades();
         setFacultades(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching faculties:", err);
       }
     };
     fetchFacultades();
@@ -31,40 +33,23 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
+
+    if (!correo.trim().toLowerCase().endsWith("@uao.edu.co")) {
+      setError("Solo se permiten correos institucionales (@uao.edu.co)");
+      return;
+    }
 
     try {
-      const res = await fetch("http://localhost:3001/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          correo,
-          contraseña,
-          idFacultad: Number(idFacultad)
-        })
-      });
-
-      const data = await res.json();
-
-      // 🔥 IGUAL QUE GESTIONAR SALAS
-      if (!res.ok) {
-        setError(
-          data.error ||
-          data.message?.join(", ") ||
-          data.errores?.join(", ") ||
-          "Error en registro"
-        );
-        return;
-      }
-
-      // ✅ SOLO SI TODO SALE BIEN
-      navigate('/login');
-
+      await register(correo, contraseña, Number(idFacultad));
+      navigate("/login");
     } catch (err) {
-      console.error(err);
-      setError("Error de conexión con el servidor");
+      const mensaje = err.response?.data?.message;
+      setError(
+        Array.isArray(mensaje)
+          ? mensaje.join(", ")
+          : mensaje || "Error de conexión con el servidor"
+      );
     }
   };
 
@@ -75,17 +60,19 @@ function Signup() {
 
         <div className="signupContent">
           <form onSubmit={handleSubmit} className="signup">
-
             <img src={avatar} alt="avatar" className="avatar" />
 
             <input
               className="correo"
-              placeholder="Correo"
+              placeholder="usuario@uao.edu.co"
               type="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               required
             />
+            <small style={{ color: "#666", fontSize: "12px", marginTop: "-10px" }}>
+              Solo correos institucionales @uao.edu.co
+            </small>
 
             <div className="passwordContainer">
               <input
@@ -96,7 +83,6 @@ function Signup() {
                 onChange={(e) => setContraseña(e.target.value)}
                 required
               />
-
               <img
                 src={mostrarPassword ? visible : privado}
                 alt="toggle password"
@@ -113,7 +99,7 @@ function Signup() {
             >
               <option value="">Selecciona una facultad</option>
               {facultades.map((fac) => (
-                <option key={fac.id} value={fac.id}>
+                <option key={fac.idFacultad || fac.id} value={fac.idFacultad || fac.id}>
                   {fac.nombre}
                 </option>
               ))}
@@ -124,7 +110,6 @@ function Signup() {
             <button className="ingresar" type="submit">
               Registrarse
             </button>
-
           </form>
         </div>
       </div>

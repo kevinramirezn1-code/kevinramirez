@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
 import NavbarGestionSalas from "../components/NavbarGestionSalas";
 import "../styles/GestionarSalas.css";
-import { eliminarRecursoDeSala } from "../services/api";
-import devolver from '../assets/images/devolver.png';
+import {
+  getSalas,
+  createSala,
+  updateSalaDatos,
+  updateSalaEstado,
+  getRecursosSala,
+  addRecursoSala,
+  eliminarRecursoDeSala,
+} from "../services/api";
+import devolver from "../assets/images/devolver.png";
 import { Link } from "react-router-dom";
 
 function GestionarSalas({ user }) {
@@ -53,11 +61,12 @@ function GestionarSalas({ user }) {
   ];
 
   const obtenerSalas = async () => {
-    const res = await fetch("http://localhost:3001/api/salas", {
-      credentials: "include"
-    });
-    const data = await res.json();
-    setSalas(data);
+    try {
+      const data = await getSalas();
+      setSalas(data);
+    } catch (error) {
+      console.error("Error al obtener salas:", error);
+    }
   };
 
   useEffect(() => {
@@ -70,23 +79,11 @@ function GestionarSalas({ user }) {
     }
 
     try {
-      const res = await fetch("http://localhost:3001/api/salas", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...sala,
-          capacidad: Number(sala.capacidad),
-          estado: "disponible"
-        })
+      await createSala({
+        ...sala,
+        capacidad: Number(sala.capacidad),
+        estado: "disponible"
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || data.errores?.join(", ") || "Error al crear sala");
-        return;
-      }
 
       alert("Sala creada correctamente ✅");
 
@@ -96,38 +93,25 @@ function GestionarSalas({ user }) {
 
     } catch (error) {
       console.error(error);
-      alert("Error de conexión con el servidor");
+      const msg = error.response?.data?.error || error.response?.data?.errores?.join(", ") || "Error al crear sala";
+      alert(msg);
     }
   };
 
   const editarInfo = async () => {
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/salas/${selectedSala.id}/datos`,
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...editForm,
-            capacidad: Number(editForm.capacidad)
-          })
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || data.errores?.join(", ") || "Error al actualizar");
-        return;
-      }
+      await updateSalaDatos(selectedSala.id, {
+        ...editForm,
+        capacidad: Number(editForm.capacidad)
+      });
 
       alert("Actualizado ✅");
       obtenerSalas();
 
     } catch (error) {
       console.error(error);
-      alert("Error de conexión con el servidor");
+      const msg = error.response?.data?.error || error.response?.data?.errores?.join(", ") || "Error al actualizar";
+      alert(msg);
     }
   };
 
@@ -139,32 +123,20 @@ function GestionarSalas({ user }) {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:3001/api/salas/${selectedSala.id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estado: estado.toLowerCase() })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || data.errores?.join(", ") || "Error al actualizar");
-        return;
-      }
+      await updateSalaEstado(selectedSala.id, { estado: estado.toLowerCase() });
+
       alert("Estado actualizado ✅");
       obtenerSalas();
       setShowEditModal(false);
     } catch (err) {
-      setError(err.message || "Error de conexión");
+      console.error(err);
+      setError(err.response?.data?.error || err.message || "Error de conexión");
     }
   };
 
   const obtenerRecursosSala = async (idSala) => {
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/sala-recursos/sala/${idSala}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
+      const data = await getRecursosSala(idSala);
       setRecursosSala(data);
     } catch (err) {
       console.error(err);
@@ -177,26 +149,10 @@ function GestionarSalas({ user }) {
     }
 
     try {
-      const res = await fetch("http://localhost:3001/api/sala-recursos", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_sala: selectedSala.id,
-          ...nuevoRecurso
-        })
+      await addRecursoSala({
+        id_sala: selectedSala.id,
+        ...nuevoRecurso
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(
-          data.error ||
-          data.errores?.map(e => e.msg || e).join("\n") ||
-          "Error al crear recurso"
-        );
-        return;
-      }
 
       alert("Recurso agregado correctamente ✅");
 
@@ -205,7 +161,10 @@ function GestionarSalas({ user }) {
 
     } catch (error) {
       console.error(error);
-      alert("Error de conexión con el servidor");
+      const msg = error.response?.data?.error ||
+        error.response?.data?.errores?.map(e => e.msg || e).join("\n") ||
+        "Error al crear recurso";
+      alert(msg);
     }
   };
 
@@ -227,7 +186,7 @@ function GestionarSalas({ user }) {
 
     } catch (err) {
       console.error(err);
-      alert(err.message || "Error al eliminar recurso");
+      alert(err.response?.data?.error || err.message || "Error al eliminar recurso");
     }
   };
 
@@ -289,7 +248,7 @@ function GestionarSalas({ user }) {
                     capacidad: s.capacidad
                   });
                   setEditEstado(s.estado);
-                  setEstado('Seleccione'); // ← CAMBIO: por defecto "Seleccione"
+                  setEstado('Seleccione');
                 }}
               >
                 Editar

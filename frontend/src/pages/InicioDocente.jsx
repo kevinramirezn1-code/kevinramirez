@@ -2,7 +2,7 @@ import '../styles/InicioDocente.css';
 import gestionarReserva from '../assets/images/calendario.png';
 import agregar from '../assets/images/agregar.png';
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
-import { Link } from 'react-router-dom'; // 👈 ESTA LÍNEA FALTABA
+import { Link } from 'react-router-dom';
 
 function InicioDocente() {
   return (

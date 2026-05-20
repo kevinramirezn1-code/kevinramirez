@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const session = require('express-session');
+const authenticateJWT = require('./middlewares/jwtMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
 const facultadRoutes = require('./routes/facultadRoutes');
@@ -12,25 +12,15 @@ const salaRecursoRoutes = require('./routes/salaRecursosRoutes');
 
 const app = express();
 
-// 🔥 CORS PARA COOKIES
+// 🔥 CORS
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
   credentials: true
 }));
 
 app.use(express.json());
 
-// 🔥 SESIÓN
-app.use(session({
-  secret: 'secreto_super_seguro',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false, // true en producción con HTTPS
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 8 // 8 horas
-  }
-}));
+app.use(authenticateJWT);
 
 // 🔹 Rutas
 app.use('/api/auth', authRoutes);
