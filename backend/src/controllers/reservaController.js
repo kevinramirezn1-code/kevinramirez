@@ -275,6 +275,46 @@ exports.reporteOcupacionSalas = async (req, res, next) => {
   }
 };
 
+// 🔹 HISTORIAL DOCENTE
+exports.historialDocente = async (req, res, next) => {
+
+  try {
+
+    const {
+      idUsuario,
+      fechaInicio,
+      fechaFin,
+      estado
+    } = req.query;
+
+    if (!idUsuario) {
+      return res.status(400).json({
+        error: 'Debe enviar el idUsuario'
+      });
+    }
+
+    const reservas =
+      await reservaService.historialDocente({
+
+        idUsuario,
+        fechaInicio,
+        fechaFin,
+        estado
+
+      });
+
+    res.json(
+      reservas.map(r => new ReservaDTO(r))
+    );
+
+  } catch (error) {
+
+    next(error);
+
+  }
+
+};
+
 // 🔹 CANCELAR 
 exports.cancelar = async (req, res, next) => {
   try {

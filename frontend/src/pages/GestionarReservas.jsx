@@ -44,6 +44,12 @@ function GestionarReservas() {
 
   const [usuarios, setUsuarios] = useState([]);
 
+  const [showConsultaDocente, setShowConsultaDocente] = useState(false);
+  const [docenteHistorial, setDocenteHistorial] = useState("");
+  const [docenteFechaInicio, setDocenteFechaInicio] = useState("");
+  const [docenteFechaFin, setDocenteFechaFin] = useState("");
+  const [historialDocente, setHistorialDocente] = useState([]);
+
   const API_URL = "http://localhost:3001/api";
 
   const opcionesHora = [];
@@ -593,6 +599,13 @@ function GestionarReservas() {
                 </button>
               )}
 
+              <button
+                className="reservaBtnVertical consultarBtn"
+                onClick={() => setShowConsultaDocente(true)}
+              >
+                Consultar Docente
+              </button>
+
             </div>
 
             <div className="legendContainer">
@@ -1004,6 +1017,196 @@ function GestionarReservas() {
 
           </div>
 
+        </div>
+      )}
+
+      {showConsultaDocente && (
+        <div className="modalOverlay">
+          <div className="historialModal">
+            <div className="historialHeader">
+              <h3 className="historialTitle">
+                Historial por Docente
+              </h3>
+              <button
+                className="historialCloseBtn"
+                onClick={() => {
+                  setShowConsultaDocente(false);
+                  setHistorialDocente([]);
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* FILTROS */}
+            <div className="historialFilters">
+              <div className="historialFiltersGrid">
+                <div className="historialField">
+                  <label>Docente</label>
+                  <select
+                    className="historialInput"
+                    value={docenteHistorial}
+                    onChange={(e) =>
+                      setDocenteHistorial(e.target.value)
+                    }
+                  >
+                    <option value="">
+                      -- Selecciona docente --
+                    </option>
+                    {docentes.map((d) => (
+
+                      <option
+                        key={d.id}
+                        value={d.id}
+                      >
+                        {d.correo}
+                      </option>
+
+                    ))}
+                  </select>
+                </div>
+                <div className="historialField">
+                  <label>Fecha Inicio</label>
+                  <input
+                    type="date"
+                    className="historialInput"
+                    value={docenteFechaInicio}
+                    onChange={(e) =>
+                      setDocenteFechaInicio(e.target.value)
+                    }
+                  />
+                </div>
+                <div className="historialField">
+                  <label>Fecha Fin</label>
+                  <input
+                    type="date"
+                    className="historialInput"
+                    value={docenteFechaFin}
+                    onChange={(e) =>
+                      setDocenteFechaFin(e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              <div className="historialButtons">
+                <button
+                  className="historialBtn historialBtnBuscar"
+                  onClick={async () => {
+
+                    if (!docenteHistorial) {
+                      return alert(
+                        "Debes seleccionar un docente"
+                      );
+                    }
+                    try {
+                      const params = {
+                        idUsuario: docenteHistorial
+                      };
+                      if (docenteFechaInicio) {
+                        params.fechaInicio =
+                          docenteFechaInicio;
+                      }
+                      if (docenteFechaFin) {
+                        params.fechaFin =
+                          docenteFechaFin;
+                      }
+                      const res = await axios.get(
+                        `${API_URL}/reservas/historial/docente`,
+                        { params }
+                      );
+                      setHistorialDocente(res.data);
+                    } catch (error) {
+                      console.error(error);
+                      alert(
+                        "Error consultando historial"
+                      );
+                    }
+                  }}
+                >
+                  Buscar
+                </button>
+              </div>
+            </div>
+
+            {/* TABLA */}
+            <div className="historialTableContainer">
+              {historialDocente.length === 0 ? (
+                <div className="historialEmpty">
+                  <span style={{ fontSize: "32px" }}>
+                    📚
+                  </span>
+                  <p>
+                    No hay reservas para mostrar
+                  </p>
+                </div>
+              ) : (
+                <table className="historialTable">
+                  <thead>
+                    <tr>
+                      <th>Correo Docente</th>
+                      <th>Nombre Sala</th>
+                      <th>Inicio</th>
+                      <th>Fin</th>
+                      <th>Horas</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialDocente.map((r) => {
+                      const horas =
+                        (
+                          (
+                            new Date(r.fechaFin)
+                            -
+                            new Date(r.fechaInicio)
+                          )
+                          /
+                          (1000 * 60 * 60)
+                        ).toFixed(1);
+                      return (
+                        <tr key={r.id}>
+                          <td>
+                            { usuarios.find(u => u.id == r.idUsuario)?.correo || r.idUsuario}
+                          </td>
+                          <td>
+                            { salas.find(s => s.id == r.idSala)?.nombre || r.idSala}
+                          </td>
+                          <td>
+                            {
+                              new Date(
+                                r.fechaInicio
+                              ).toLocaleString()
+                            }
+                          </td>
+                          <td>
+                            {
+                              new Date(
+                                r.fechaFin
+                              ).toLocaleString()
+                            }
+                          </td>
+                          <td>
+                            {horas} h
+                          </td>
+                          <td>
+                            <span
+                              className={
+                                r.estado === "ACTIVA"
+                                ? "estadoBadge estadoActiva"
+                                : "estadoBadge estadoCancelada"
+                              }
+                            >
+                              {r.estado}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

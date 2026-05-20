@@ -305,6 +305,61 @@ class ReservaService {
 
   }
 
+  async historialDocente({
+    idUsuario,
+    fechaInicio,
+    fechaFin,
+    estado
+  } = {}) {
+
+    const where = {};
+
+    // obligatorio
+    if (idUsuario) {
+      where.idUsuario = idUsuario;
+    }
+
+    // opcional
+    if (estado) {
+      where.estado = estado;
+    }
+
+    // rango fechas
+    if (fechaInicio || fechaFin) {
+
+      where.fechaInicio = {};
+
+      if (fechaInicio) {
+        where.fechaInicio[Op.gte] =
+          new Date(`${fechaInicio}T00:00:00`);
+      }
+
+      if (fechaFin) {
+        where.fechaInicio[Op.lte] =
+          new Date(`${fechaFin}T23:59:59`);
+      }
+    }
+
+    return await Reserva.findAll({
+      where,
+
+      include: [
+        {
+          model: Sala,
+          as: 'sala',
+          attributes: ['id', 'nombre']
+        },
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'correo']
+        }
+      ],
+
+      order: [['fechaInicio', 'DESC']]
+    });
+  }
+
   async eliminar(id) {
     const reserva = await this.obtenerPorId(id);
 
