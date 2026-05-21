@@ -131,4 +131,15 @@ export const eliminarRecursoDeSala = async (data) => {
   return res.data;
 };
 
+// ---- NOTIFICACIONES ----
+
+export const getNotificaciones = async (idDocente) => {
+
+  const res =
+    await api.get(`/notificaciones/${idDocente}`);
+
+  return res.data;
+
+};
+
 export default api;

@@ -8,6 +8,7 @@ const Sala = require('./sala')(sequelize, DataTypes);
 const Reserva = require('./reserva')(sequelize, DataTypes);
 const Recurso = require('./recurso')(sequelize, DataTypes);
 const SalaRecurso = require('./salaRecurso')(sequelize, DataTypes);
+const AuditoriaReserva = require('./auditoriaReserva')(sequelize, DataTypes);
 
 // ✅ DEFINE db PRIMERO
 const db = {
@@ -19,10 +20,21 @@ const db = {
   Sala,
   Reserva,
   Recurso,
-  SalaRecurso
+  SalaRecurso,
+  AuditoriaReserva
 };
 
 // 🔥 RELACIONES
+
+AuditoriaReserva.belongsTo(Sala, {
+  foreignKey: 'idSala_despues',
+  as: 'salaNueva'
+});
+
+AuditoriaReserva.belongsTo(Sala, {
+  foreignKey: 'idSala_antes',
+  as: 'salaAnterior'
+});
 
 Facultad.hasMany(Sala, {
   foreignKey: 'facultad_id'

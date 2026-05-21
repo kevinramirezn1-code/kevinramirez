@@ -9,6 +9,7 @@ const usuarioRoutes = require('./routes/usuarioRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
 const recursoRoutes = require('./routes/recursoRoutes');
 const salaRecursoRoutes = require('./routes/salaRecursosRoutes');
+const notificacionesRoutes = require('./routes/notificaciones');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/reservas', reservaRoutes);
 app.use('/api/recursos', recursoRoutes);
 app.use('/api/sala-recursos', salaRecursoRoutes);
+app.use('/api/notificaciones', notificacionesRoutes);
 
 // 🔥 Error global
 app.use((err, req, res, next) => {

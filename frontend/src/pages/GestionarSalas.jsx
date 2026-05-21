@@ -454,7 +454,7 @@ function GestionarSalas({ user }) {
                   + Agregar
                 </button>
               </div>
-
+ 
             </div>
 
             <div className="modal-buttons">
