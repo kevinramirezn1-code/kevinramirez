@@ -27,6 +27,17 @@ const Reportes = () => {
   const [docentes, setDocentes] = useState([]);
   const [salas, setSalas] = useState([]);
   const [ocupacion, setOcupacion] = useState([]);
+
+  // ===== ESTADO: HISTORIAL DE USUARIOS ====
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState('');
+  const usuariosUnicos = [
+    ...new Set(
+      usuarios.map((u) => u.docente)
+      )
+     ];
+  const [paginaUsuarios, setPaginaUsuarios] = useState(1);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
 
   // ===== LÓGICA: NÚMERO DE RESERVAS =====
@@ -75,6 +86,28 @@ const Reportes = () => {
   const indiceFin    = indiceInicio + ITEMS_PER_PAGE;
   const reportePagina = reporte.slice(indiceInicio, indiceFin);
 
+  const usuariosFiltrados =
+  usuarioSeleccionado === 'todos'
+    ? usuarios
+    : usuarios.filter(
+        u => u.docente === usuarioSeleccionado
+      );
+
+  const totalPaginasUsuarios = Math.ceil(
+  usuariosFiltrados.length / ITEMS_PER_PAGE
+      );
+
+  const indiceInicioUsuarios =
+  (paginaUsuarios - 1) * ITEMS_PER_PAGE;
+
+  const indiceFinUsuarios =
+  indiceInicioUsuarios + ITEMS_PER_PAGE;
+
+  const usuariosPagina = usuariosFiltrados.slice(
+  indiceInicioUsuarios,
+  indiceFinUsuarios
+    );
+
   // ===== LÓGICA: HISTORIAL DE HORAS =====
   const generarTodoElHistorial = async () => {
     if (!fechaInicioHistorial || !fechaFinHistorial) {
@@ -110,6 +143,79 @@ const Reportes = () => {
     } finally {
       setLoadingHistorial(false);
     }
+  };
+
+  // ===== LÓGICA: REPORTE POR USUARIOS =====
+  const generarReporteUsuarios = async () => {
+
+  if (!fechaInicioHistorial || !fechaFinHistorial) {
+    return alert('Debe seleccionar fecha inicio y fecha fin');
+  }
+
+  try {
+
+    setLoadingUsuarios(true);
+
+    const params = new URLSearchParams();
+    params.append('fechaInicio', fechaInicioHistorial);
+    params.append('fechaFin', fechaFinHistorial);
+
+    const response = await fetch(
+      `http://localhost:3001/api/reservas/reportes/docentes?${params.toString()}`
+    );
+
+    const data = await response.json();
+
+    setUsuarios(Array.isArray(data) ? data : []);
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert('Error generando reporte por usuario');
+
+  } finally {
+
+    setLoadingUsuarios(false);
+
+  }
+
+  };
+
+  const descargarPDFUsuarios = () => {
+
+  if (usuarios.length === 0) {
+    return alert("No hay datos para generar el PDF");
+  }
+
+  const doc = new jsPDF();
+
+  doc.setFontSize(18);
+  doc.text("Reporte por Usuario", 14, 20);
+
+  let y = 30;
+
+  doc.setFontSize(14);
+  doc.text("Uso por Usuarios", 14, y);
+
+  y += 5;
+
+  autoTable(doc, {
+
+    startY: y,
+
+    head: [["Usuario", "Horas", "Reservas"]],
+
+    body: usuarios.map(u => [
+      u.docente,
+      u.horas.toFixed(2),
+      u.reservas
+    ])
+
+  });
+
+  doc.save("reporte-usuarios.pdf");
+
   };
 
   const descargarPDFHistorial = () => {
@@ -172,7 +278,7 @@ const Reportes = () => {
       {[
         { id: 'horas',     label: 'Número de Reservas' },
         { id: 'historial', label: 'Uso por Horas Reservadas' },
-        { id: 'canceladas',label: 'Canceladas' },
+        { id: 'usuarios', label: 'Reporte de uso por Usuarios' },
       ].map((tab) => (
         <button
           key={tab.id}
@@ -401,16 +507,171 @@ const Reportes = () => {
     </div>
   );
 
-  const renderPlaceholder = (text) => (
-    <div className="reportesCard">
-      <div className="placeholderTab">{text}</div>
+  const renderUsuarios = () => (
+  <div className="reportesCard">
+    <div className="reportesFiltros reportesFiltrosTres">
+  <div className="campoFiltro">
+  <label>Fecha inicio</label>
+  <input
+    type="date"
+    value={fechaInicioHistorial}
+    onChange={(e) =>
+      setFechaInicioHistorial(e.target.value)
+    }
+  />
+  </div>
+  <div className="campoFiltro">
+  <label>Fecha fin</label>
+  <input
+    type="date"
+    value={fechaFinHistorial}
+    onChange={(e) =>
+      setFechaFinHistorial(e.target.value)
+    }
+  />
+   </div>
+  <div className="campoFiltro">
+   <label>Usuario</label>
+    <select
+     value={usuarioSeleccionado}
+     onChange={(e) => {
+       setUsuarioSeleccionado(e.target.value);
+        setPaginaUsuarios(1);
+     }}
+   >
+    <option value="" disabled hidden>
+      Seleccionar usuario
+      </option>
+    <option value="todos">
+      Todos
+      </option>
+      {
+       usuariosUnicos.map((u, i) => (
+          <option
+            key={i}
+            value={u}
+          >
+            {u}
+         </option>
+       ))
+     }
+    </select>
+  </div>
     </div>
+    <div className="botonesAccion">
+      <button
+        className="btnGenerar"
+        onClick={generarReporteUsuarios}
+        disabled={loadingUsuarios}
+      >
+        {
+          loadingUsuarios
+            ? 'Generando...'
+            : 'Generar reporte'
+        }
+      </button>
+      <button
+        className="btnPDF"
+        onClick={descargarPDFUsuarios}
+      >
+        Descargar PDF
+      </button>
+    </div>
+    <div className="tablaContainer">
+      {
+        usuarios.length === 0 ? (
+          <div className="sinDatos">
+            Ingrese los filtros y genere un reporte
+          </div>
+        ) : (
+          <>
+            <table className="tablaReportes">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Horas</th>
+                  <th>Reservas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  usuariosPagina.map((u, i) => (
+                    <tr key={i}>
+                      <td>{u.docente}</td>
+                      <td>
+                        {u.horas.toFixed(2)}
+                      </td>
+                      <td>{u.reservas}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+            {
+              totalPaginasUsuarios > 1 && (
+                <div className="paginacion">
+                  <button
+                    className="btnPagina"
+                    onClick={() =>
+                      setPaginaUsuarios((p) =>
+                        Math.max(p - 1, 1)
+                      )
+                    }
+                    disabled={paginaUsuarios === 1}
+                  >
+                    ‹
+                  </button>
+                  {
+                    Array.from(
+                      { length: totalPaginasUsuarios },
+                      (_, i) => i + 1
+                    ).map((num) => (
+
+                      <button
+                        key={num}
+                        className={`btnPagina ${
+                          paginaUsuarios === num
+                            ? 'activo'
+                            : ''
+                        }`}
+                        onClick={() =>
+                          setPaginaUsuarios(num)
+                        }
+                      >
+                        {num}
+                      </button>
+                    ))
+                  }
+                  <button
+                    className="btnPagina"
+                    onClick={() =>
+                      setPaginaUsuarios((p) =>
+                        Math.min(
+                          p + 1,
+                          totalPaginasUsuarios
+                        )
+                      )
+                    }
+                    disabled={
+                      paginaUsuarios === totalPaginasUsuarios
+                    }
+                  >
+                    ›
+                  </button>
+                </div>
+              )
+            }
+          </>
+        )
+      }
+    </div>
+  </div>
   );
 
   const renderContent = () => {
     if (tabActiva === 'horas')      return renderHoras();
     if (tabActiva === 'historial')  return renderHistorial();
-    if (tabActiva === 'canceladas') return renderPlaceholder('Próximamente: reservas canceladas');
+    if (tabActiva === 'usuarios') return renderUsuarios();
   };
 
   return (
