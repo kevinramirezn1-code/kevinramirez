@@ -254,6 +254,7 @@ function GestionarReservas() {
   const handleDateClick = (date) => {
     setSelectedDate(date);
     setReservaSeleccionada(null);
+    setDocenteSeleccionado("");
   };
 
   const isSameDate = (date1, date2) => {
@@ -303,9 +304,25 @@ function GestionarReservas() {
 
   const handleCrearReserva = async () => {
     if (!selectedDate) return alert("Debes seleccionar un día primero");
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const fechaSeleccionada = new Date(selectedDate);
+    fechaSeleccionada.setHours(0, 0, 0, 0);
+
+    if (fechaSeleccionada < hoy) {
+      return alert("No se pueden crear reservas en fechas anteriores");
+    }
+
     if (selectedDate.getDay() === 0) return alert("No se pueden crear reservas los domingos");
     if (!salaSeleccionada) return alert("Debes seleccionar una sala");
     if (!horaInicio || !horaFin) return alert("Debes seleccionar hora inicio y fin");
+    if (horaInicio === horaFin) {
+      return alert(
+        "La hora de inicio y fin no pueden ser iguales"
+      );
+    }s
 
     if (user.rol?.toLowerCase() === "secretaria" && !docenteSeleccionado) {
       return alert("Debes seleccionar un docente");
@@ -587,10 +604,10 @@ function GestionarReservas() {
               </button>
 
               <button
-                className="reservaBtnVertical consultarBtn"
+                className="reservaBtnVertical disponibilidadBtn"
                 onClick={() => setShowConsultar(true)}
               >
-                Consultar
+                Disponibilidad de sala
               </button>
 
               {user?.rol?.toLowerCase() === "secretaria" && (
@@ -598,15 +615,15 @@ function GestionarReservas() {
                   className="reservaBtnVertical historialBtn"
                   onClick={() => setShowHistorial(true)}
                 >
-                  Historial
+                  Historial de reservas
                 </button>
               )}
 
               <button
-                className="reservaBtnVertical consultarBtn"
+                className="reservaBtnVertical historialDocenteBtn"
                 onClick={() => setShowConsultaDocente(true)}
               >
-                Consultar Docente
+                Historial reservas docente
               </button>
 
             </div>

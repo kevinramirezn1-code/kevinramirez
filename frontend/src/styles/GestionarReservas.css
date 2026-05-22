@@ -453,10 +453,20 @@
   height: 40px;
 }
 
-.consultarBtn {
-  background: #6366f1;
+.disponibilidadBtn {
+  background: #06b64f;
   color: white;
 }
+
+.disponibilidadBtn:hover {
+  background: #048535;
+}
+
+.historialBtn {
+  background: #e49d41;
+  color: rgb(255, 255, 255);
+}
+
 /* WRAPPER */
 .disponibilidadWrapper {
   overflow-x: auto;
@@ -613,7 +623,7 @@
   flex-wrap: wrap;
 }
 
-.historialBtn {
+.historialDocenteBtn {
   font-size: 13px;
   padding: 6px 14px;
   height: 32px;
@@ -626,7 +636,7 @@
   transition: 0.2s;
 }
 
-.historialBtn:hover {
+.historialDocenteBtn:hover {
   opacity: 0.9;
 }
 

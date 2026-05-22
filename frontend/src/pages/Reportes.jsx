@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/Reportes.css';
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
@@ -39,6 +39,32 @@ const Reportes = () => {
   const [paginaUsuarios, setPaginaUsuarios] = useState(1);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
+
+  useEffect(() => {
+
+    const cargarUsuarios = async () => {
+
+      try {
+
+        const response = await fetch(
+          'http://localhost:3001/api/reservas/reportes/docentes'
+        );
+
+        const data = await response.json();
+
+        setUsuarios(Array.isArray(data) ? data : []);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    };
+
+    cargarUsuarios();
+
+  }, []);
 
   // ===== LÓGICA: NÚMERO DE RESERVAS =====
   const generarReporte = async () => {
