@@ -275,16 +275,6 @@ exports.reporteOcupacionSalas = async (req, res, next) => {
   }
 };
 
-const ahora = new Date();
-
-    const inicioReserva = new Date(fechaInicio);
-
-      if (inicioReserva <= ahora) {
-       return res.status(400).json({
-        error: 'La fecha de inicio debe ser mayor a la fecha actual'
-          });
-        }
-
 // 🔹 HISTORIAL DOCENTE
 exports.historialDocente = async (req, res, next) => {
 
