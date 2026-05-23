@@ -7,12 +7,46 @@ class ReservaService {
     return await Reserva.create(data);
   }
 
-  async listar() {
-    return await Reserva.findAll({
-      where: { estado: 'ACTIVA' },
-      order: [['id', 'ASC']]
-    });
+  async listar({ fecha, facultad } = {}) {
+
+  const where = {
+    estado: 'ACTIVA'
+  };
+
+  // filtro por fecha
+  if (fecha) {
+
+    where.fechaInicio = {
+      [Op.gte]: new Date(`${fecha}T00:00:00`),
+      [Op.lte]: new Date(`${fecha}T23:59:59`)
+    };
   }
+
+  return await Reserva.findAll({
+
+    where,
+
+    include: [
+      {
+        model: Sala,
+        as: 'sala',
+
+        attributes: [
+          'id',
+          'nombre',
+          'facultad'
+        ],
+
+        // FILTRO FACULTAD
+        where: {
+          facultad: facultad
+        }
+      }
+    ],
+
+    order: [['fechaInicio', 'ASC']]
+  });
+}
 
   async listarTodas() {
     return await Reserva.findAll({

@@ -52,32 +52,84 @@ exports.crear = async (req, res, next) => {
 
 // 🔹 LISTAR
 exports.listar = async (req, res, next) => {
+
   try {
+
     const { fecha } = req.query;
 
-    if (fecha) {
-      const inicioDia = new Date(fecha + "T00:00:00");
-      const finDia = new Date(fecha + "T23:59:59");
+    // 🔥 FACULTAD DEL USUARIO LOGEADO
+    const idFacultad =
+      req.user.idFacultad;
 
-      const reservas = await Reserva.findAll({
-        where: {
-          estado: 'ACTIVA',
-          fechaInicio: { [Op.lte]: finDia },
-          fechaFin: { [Op.gte]: inicioDia }
-        },
+    const whereReserva = {
+      estado: 'ACTIVA'
+    };
+
+    // 🔥 FILTRO POR FECHA
+    if (fecha) {
+
+      const inicioDia =
+        new Date(fecha + "T00:00:00");
+
+      const finDia =
+        new Date(fecha + "T23:59:59");
+
+      whereReserva.fechaInicio = {
+        [Op.lte]: finDia
+      };
+
+      whereReserva.fechaFin = {
+        [Op.gte]: inicioDia
+      };
+    }
+
+    const reservas =
+      await Reserva.findAll({
+
+        where: whereReserva,
+
+        include: [
+          {
+            model: Usuario,
+            as: 'usuario',
+
+            where: {
+              idFacultad
+            },
+
+            attributes: [
+              'id',
+              'correo',
+              'idFacultad'
+            ]
+          },
+
+          {
+            model: Sala,
+            as: 'sala',
+            attributes: [
+              'id',
+              'nombre'
+            ]
+          }
+        ],
+
         order: [['fechaInicio', 'ASC']]
       });
 
-      return res.json(reservas.map(r => new ReservaDTO(r)));
-    }
-
-    const reservas = await reservaService.listar();
-    res.json(reservas.map(r => new ReservaDTO(r)));
+    res.json(
+      reservas.map(r =>
+        new ReservaDTO(r)
+      )
+    );
 
   } catch (error) {
+
     next(error);
+
   }
 };
+
 
 // 🔹 OBTENER POR ID
 exports.obtenerPorId = async (req, res, next) => {
