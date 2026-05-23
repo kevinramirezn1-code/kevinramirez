@@ -391,7 +391,7 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background: red;
+  background: #ef4444;
   color: white;
   border-radius: 50%;
   min-width: 20px;
@@ -401,38 +401,198 @@
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
+/* PANEL */
 
 .notificacionesPanel {
   position: absolute;
   top: 60px;
   right: 0;
-  width: 320px;
-  max-height: 400px;
+  width: 360px;
+  max-height: 500px;
   overflow-y: auto;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  padding: 15px;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  animation: fadePanel 0.25s ease;
 }
 
-.notificacionesPanel h3 {
-  margin-bottom: 10px;
-  font-size: 16px;
+@keyframes fadePanel {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* HEADER */
+
+.notificacionesHeader {
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 10px;
+}
+
+.notificacionesHeader h3 {
+  margin: 0;
   color: #1e3c72;
+  font-size: 20px;
 }
 
-.notificacionItem {
-  padding: 10px 0;
-}
+/* VACÍO */
 
-.notificacionItem p {
+.sinNotificaciones {
+  text-align: center;
+  color: #6b7280;
+  padding: 30px 10px;
   font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
 }
 
-.notificacionItem small {
-  color: #666;
+/* CARD */
+
+.notificacionCard {
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+
+.notificacionCard:hover {
+  transform: translateY(-2px);
+}
+
+/* AJUSTE */
+
+.ajuste {
+  background: #eff6ff;
+  border-left: 5px solid #2563eb;
+}
+
+/* CANCELADA */
+
+.cancelada {
+  background: #fef2f2;
+  border-left: 5px solid #dc2626;
+}
+
+/* TOP */
+
+.notificacionTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tipoNotificacion {
+  font-weight: bold;
+  font-size: 14px;
+  color: #111827;
+}
+
+/* MENSAJE */
+
+.mensajeNotificacion {
+  margin-top: 10px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  color: #111827;
+  line-height: 1.4;
+}
+
+/* DETALLES */
+
+.detalleNotificacion {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.detalleNotificacion small {
+  color: #374151;
+  font-size: 13px;
+}
+
+/* FECHAS */
+
+.fechasNotificacion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.fechasNotificacion small {
+  color: #4b5563;
   font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ESTADO */
+
+.estadoCancelada {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #dc2626;
+  font-weight: bold;
+}
+
+/* BOTÓN */
+
+.btnLeida {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btnLeida:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(37,99,235,0.3);
+}
+
+/* SCROLL */
+
+.notificacionesPanel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notificacionesPanel::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.notificacionesPanel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 480px) {
+
+  .contenedorNotificacion {
+    right: 80px;
+  }
+
+  .notificacionesPanel {
+    width: 300px;
+    right: -20px;
+  }
+
 }

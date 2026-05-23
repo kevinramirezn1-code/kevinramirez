@@ -4,12 +4,9 @@ import agregar from '../assets/images/agregar.png';
 import NavbarGestionSalas from '../components/NavbarGestionSalas';
 import { Link } from 'react-router-dom';
 import notificacion from '../assets/images/notificacion.png';
-
 import { useState, useEffect } from 'react';
-
 import { getNotificaciones }
 from '../services/api';
-
 import { useAuth }
 from '../context/AuthContext';
 
@@ -35,25 +32,62 @@ function InicioDocente() {
 
   }, [user]);
 
+  const marcarComoLeida = (id) => {
+
+  // Obtener leídas actuales
+  const leidas =
+    JSON.parse(
+      localStorage.getItem(
+        `notificaciones_leidas_${user.id}`
+      )
+    ) || [];
+
+  // Guardar nueva
+  localStorage.setItem(
+    `notificaciones_leidas_${user.id}`,
+    JSON.stringify([...leidas, id])
+  );
+
+  // Quitarla visualmente
+  setNotificaciones(prev =>
+    prev.filter(n => n.id !== id)
+  );
+
+};
+
   const cargarNotificaciones = async () => {
 
-    try {
+  try {
 
-      const data =
-        await getNotificaciones(user.id);
+    const data =
+      await getNotificaciones(user.id);
 
-      setNotificaciones(data);
+    // Obtener IDs leídas guardadas
+    const leidas =
+      JSON.parse(
+        localStorage.getItem(
+          `notificaciones_leidas_${user.id}`
+        )
+      ) || [];
 
-    } catch (error) {
-
-      console.error(
-        'Error cargando notificaciones',
-        error
+    // Filtrar las leídas
+    const filtradas =
+      data.filter(
+        n => !leidas.includes(n.id)
       );
 
-    }
+    setNotificaciones(filtradas);
 
-  };
+  } catch (error) {
+
+    console.error(
+      'Error cargando notificaciones',
+      error
+    );
+
+  }
+
+};
 
   return (
 
@@ -85,15 +119,18 @@ function InicioDocente() {
       </div>
 
       {mostrarNotificaciones && (
-
         <div className="notificacionesPanel">
 
-          <h3>Notificaciones</h3>
+          <div className="notificacionesHeader">
+            <h3>Notificaciones</h3>
+          </div>
 
           {
             notificaciones.length === 0
             ? (
-              <p>No tienes notificaciones.</p>
+              <div className="sinNotificaciones">
+                <p>No tienes notificaciones.</p>
+              </div>
             )
             : (
               notificaciones.map(n => (
@@ -102,12 +139,26 @@ function InicioDocente() {
                   key={n.id}
                   className={
                     n.accion === 'CANCELACION'
-                    ? 'notificacionCancelada'
-                    : 'notificacionItem'
+                    ? 'notificacionCard cancelada'
+                    : 'notificacionCard ajuste'
                   }
                 >
 
-                  <p>
+                  <div className="notificacionTop">
+
+                    <span className="tipoNotificacion">
+
+                      {
+                        n.accion === 'CANCELACION'
+                        ? '❌ Cancelación'
+                        : '✏️ Ajuste'
+                      }
+
+                    </span>
+
+                  </div>
+
+                  <p className="mensajeNotificacion">
 
                     {
                       n.accion === 'CANCELACION'
@@ -119,88 +170,72 @@ function InicioDocente() {
 
                   {
                     n.accion === 'AJUSTE' && (
-                      <>
+                      <div className="detalleNotificacion">
 
                         <small>
-
-                          Sala anterior:
-                          {
-                            n.salaAnterior?.nombre || 'N/A'
-                          }
-
+                          <strong>Sala anterior:</strong>{" "}
+                          {n.salaAnterior?.nombre || 'N/A'}
                         </small>
-
-                        <br />
 
                         <small>
-
-                          Nueva sala:
-                          {
-                            n.salaNueva?.nombre || 'N/A'
-                          }
-
+                          <strong>Nueva sala:</strong>{" "}
+                          {n.salaNueva?.nombre || 'N/A'}
                         </small>
 
-                        <br />
-
-                      </>
+                      </div>
                     )
                   }
 
                   {
                     n.accion === 'CANCELACION' && (
 
-                      <>
-                      
-                        <small
-                          style={{
-                            color: 'red',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          Estado: CANCELADA
-                        </small>
-
-                        <br />
-
-                      </>
+                      <small className="estadoCancelada">
+                        Estado: CANCELADA
+                      </small>
 
                     )
                   }
 
-                  <small>
+                  <div className="fechasNotificacion">
 
-                    Fecha anterior:
-                    {
-                      n.fechaInicio_antes
-                      ?
-                      new Date(
+                    <small>
+                      <strong>Fecha anterior:</strong><br />
+
+                      {
                         n.fechaInicio_antes
-                      ).toLocaleString()
-                      :
-                      'N/A'
-                    }
+                        ?
+                        new Date(
+                          n.fechaInicio_antes
+                        ).toLocaleString()
+                        :
+                        'N/A'
+                      }
+                    </small>
 
-                  </small>
+                    <small>
+                      <strong>Nueva fecha:</strong><br />
 
-                  <br />
-
-                  <small>
-
-                    Nueva fecha:
-                    {
-                      n.fechaInicio_despues
-                      ?
-                      new Date(
+                      {
                         n.fechaInicio_despues
-                      ).toLocaleString()
-                      :
-                      'N/A'
+                        ?
+                        new Date(
+                          n.fechaInicio_despues
+                        ).toLocaleString()
+                        :
+                        'N/A'
+                      }
+                    </small>
+
+                  </div>
+
+                  <button
+                    className="btnLeida"
+                    onClick={() =>
+                      marcarComoLeida(n.id)
                     }
-
-                  </small>
-
-                  <hr />
+                  >
+                    Marcar como leída
+                  </button>
 
                 </div>
 
