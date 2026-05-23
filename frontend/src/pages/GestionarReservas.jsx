@@ -322,7 +322,7 @@ function GestionarReservas() {
       return alert(
         "La hora de inicio y fin no pueden ser iguales"
       );
-    }s
+    }
 
     if (user.rol?.toLowerCase() === "secretaria" && !docenteSeleccionado) {
       return alert("Debes seleccionar un docente");
@@ -619,12 +619,14 @@ function GestionarReservas() {
                 </button>
               )}
 
-              <button
-                className="reservaBtnVertical historialDocenteBtn"
-                onClick={() => setShowConsultaDocente(true)}
-              >
-                Historial reservas docente
-              </button>
+              {user?.rol?.toLowerCase() === "docente" && (
+                <button
+                  className="reservaBtnVertical historialDocenteBtn"
+                  onClick={() => setShowConsultaDocente(true)}
+                >
+                  Historial reservas docente
+                </button>
+              )}
 
             </div>
 
@@ -1073,279 +1075,240 @@ function GestionarReservas() {
       )}
 
       {showConsultaDocente && (
-        <div className="modalOverlay">
-          <div className="historialModal">
+  <div className="modalOverlay">
+    <div className="historialModal">
 
-            <div className="historialHeader">
-              <h3 className="historialTitle">
-                Historial por Docente
-              </h3>
+      <div className="historialHeader">
+        <h3 className="historialTitle">
+          Mi Historial de Reservas
+        </h3>
+
+        <button
+          className="historialCloseBtn"
+          onClick={() => {
+            setShowConsultaDocente(false);
+            setHistorialDocente([]);
+            setHistorialDocentePage(1);
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* FILTROS */}
+      <div className="historialFilters">
+
+        <div className="historialFiltersGrid">
+
+          <div className="historialField">
+            <label>Fecha Inicio</label>
+
+            <input
+              type="date"
+              className="historialInput"
+              value={docenteFechaInicio}
+              onChange={(e) =>
+                setDocenteFechaInicio(e.target.value)
+              }
+            />
+          </div>
+
+          <div className="historialField">
+            <label>Fecha Fin</label>
+
+            <input
+              type="date"
+              className="historialInput"
+              value={docenteFechaFin}
+              onChange={(e) =>
+                setDocenteFechaFin(e.target.value)
+              }
+            />
+          </div>
+
+        </div>
+
+        <div className="historialButtons">
+
+          <button
+            className="historialBtn historialBtnBuscar"
+            onClick={async () => {
+
+              try {
+
+                const params = {
+                  idUsuario: user.id
+                };
+
+                if (docenteFechaInicio) {
+                  params.fechaInicio = docenteFechaInicio;
+                }
+
+                if (docenteFechaFin) {
+                  params.fechaFin = docenteFechaFin;
+                }
+
+                const res = await fetch(
+                  `http://localhost:3001/api/reservas/historial/docente?${new URLSearchParams(params)}`
+                );
+
+                const data = await res.json();
+
+                setHistorialDocente(data);
+                setHistorialDocentePage(1);
+
+              } catch (error) {
+                console.error(error);
+                alert("Error consultando historial");
+              }
+            }}
+          >
+            Buscar
+          </button>
+
+        </div>
+      </div>
+
+      {/* TABLA */}
+      <div className="historialTableContainer">
+
+        {historialDocente.length === 0 ? (
+
+          <div className="historialEmpty">
+            <span style={{ fontSize: "32px" }}>
+              📚
+            </span>
+
+            <p>
+              No hay reservas para mostrar
+            </p>
+          </div>
+
+        ) : (
+
+          <>
+            <table className="historialTable">
+
+              <thead>
+                <tr>
+                  <th>Sala</th>
+                  <th>Inicio</th>
+                  <th>Fin</th>
+                  <th>Horas</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {historialDocentePaginado.map((r) => {
+
+                  const horas =
+                    (
+                      (
+                        new Date(r.fechaFin)
+                        -
+                        new Date(r.fechaInicio)
+                      )
+                      /
+                      (1000 * 60 * 60)
+                    ).toFixed(1);
+
+                  return (
+
+                    <tr key={r.id}>
+
+                      <td>
+                        {
+                          salas.find(
+                            s => s.id == r.idSala
+                          )?.nombre || r.idSala
+                        }
+                      </td>
+
+                      <td>
+                        {
+                          new Date(
+                            r.fechaInicio
+                          ).toLocaleString()
+                        }
+                      </td>
+
+                      <td>
+                        {
+                          new Date(
+                            r.fechaFin
+                          ).toLocaleString()
+                        }
+                      </td>
+
+                      <td>
+                        {horas} h
+                      </td>
+
+                      <td>
+                        <span
+                          className={
+                            r.estado === "ACTIVA"
+                              ? "estadoBadge estadoActiva"
+                              : "estadoBadge estadoCancelada"
+                          }
+                        >
+                          {r.estado}
+                        </span>
+                      </td>
+
+                    </tr>
+
+                  );
+                })}
+
+              </tbody>
+
+            </table>
+
+            {/* PAGINACIÓN */}
+            <div className="paginationContainer">
 
               <button
-                className="historialCloseBtn"
-                onClick={() => {
-                  setShowConsultaDocente(false);
-                  setHistorialDocente([]);
-                  setHistorialDocentePage(1);
-                }}
+                className="paginationBtn"
+                disabled={historialDocentePage === 1}
+                onClick={() =>
+                  setHistorialDocentePage(
+                    historialDocentePage - 1
+                  )
+                }
               >
-                ×
+                ← Anterior
               </button>
-            </div>
 
-            {/* FILTROS */}
-            <div className="historialFilters">
+              <span className="paginationInfo">
+                Página {historialDocentePage} de {totalPaginasDocente || 1}
+              </span>
 
-              <div className="historialFiltersGrid">
-
-                <div className="historialField">
-                  <label>Docente</label>
-
-                  <select
-                    className="historialInput"
-                    value={docenteHistorial}
-                    onChange={(e) =>
-                      setDocenteHistorial(e.target.value)
-                    }
-                  >
-                    <option value="">
-                      -- Selecciona docente --
-                    </option>
-
-                    {docentes.map((d) => (
-                      <option
-                        key={d.id}
-                        value={d.id}
-                      >
-                        {d.correo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="historialField">
-                  <label>Fecha Inicio</label>
-
-                  <input
-                    type="date"
-                    className="historialInput"
-                    value={docenteFechaInicio}
-                    onChange={(e) =>
-                      setDocenteFechaInicio(e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="historialField">
-                  <label>Fecha Fin</label>
-
-                  <input
-                    type="date"
-                    className="historialInput"
-                    value={docenteFechaFin}
-                    onChange={(e) =>
-                      setDocenteFechaFin(e.target.value)
-                    }
-                  />
-                </div>
-
-              </div>
-
-              <div className="historialButtons">
-
-                <button
-                  className="historialBtn historialBtnBuscar"
-                  onClick={async () => {
-
-                    if (!docenteHistorial) {
-                      return alert(
-                        "Debes seleccionar un docente"
-                      );
-                    }
-
-                    try {
-
-                      const params = {
-                        idUsuario: docenteHistorial
-                      };
-
-                      if (docenteFechaInicio) {
-                        params.fechaInicio = docenteFechaInicio;
-                      }
-
-                      if (docenteFechaFin) {
-                        params.fechaFin = docenteFechaFin;
-                      }
-
-                      const res = await fetch(
-                        `http://localhost:3001/api/reservas/historial/docente?${new URLSearchParams(params)}`
-                      );
-                      const data = await res.json();
-
-                      setHistorialDocente(data);
-                      setHistorialDocentePage(1);
-
-                    } catch (error) {
-                      console.error(error);
-                      alert("Error consultando historial");
-                    }
-                  }}
-                >
-                  Buscar
-                </button>
-
-              </div>
-            </div>
-
-            {/* TABLA */}
-            <div className="historialTableContainer">
-
-              {historialDocente.length === 0 ? (
-
-                <div className="historialEmpty">
-                  <span style={{ fontSize: "32px" }}>
-                    📚
-                  </span>
-
-                  <p>
-                    No hay reservas para mostrar
-                  </p>
-                </div>
-
-              ) : (
-
-                <>
-                  <table className="historialTable">
-
-                    <thead>
-                      <tr>
-                        <th>Correo Docente</th>
-                        <th>Nombre Sala</th>
-                        <th>Inicio</th>
-                        <th>Fin</th>
-                        <th>Horas</th>
-                        <th>Estado</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-
-                      {historialDocentePaginado.map((r) => {
-
-                        const horas =
-                          (
-                            (
-                              new Date(r.fechaFin)
-                              -
-                              new Date(r.fechaInicio)
-                            )
-                            /
-                            (1000 * 60 * 60)
-                          ).toFixed(1);
-
-                        return (
-
-                          <tr key={r.id}>
-
-                            <td>
-                              {
-                                usuarios.find(
-                                  u => u.id == r.idUsuario
-                                )?.correo || r.idUsuario
-                              }
-                            </td>
-
-                            <td>
-                              {
-                                salas.find(
-                                  s => s.id == r.idSala
-                                )?.nombre || r.idSala
-                              }
-                            </td>
-
-                            <td>
-                              {
-                                new Date(
-                                  r.fechaInicio
-                                ).toLocaleString()
-                              }
-                            </td>
-
-                            <td>
-                              {
-                                new Date(
-                                  r.fechaFin
-                                ).toLocaleString()
-                              }
-                            </td>
-
-                            <td>
-                              {horas} h
-                            </td>
-
-                            <td>
-                              <span
-                                className={
-                                  r.estado === "ACTIVA"
-                                    ? "estadoBadge estadoActiva"
-                                    : "estadoBadge estadoCancelada"
-                                }
-                              >
-                                {r.estado}
-                              </span>
-                            </td>
-
-                          </tr>
-
-                        );
-                      })}
-
-                    </tbody>
-
-                  </table>
-
-                  {/* PAGINACIÓN */}
-                  <div className="paginationContainer">
-
-                    <button
-                      className="paginationBtn"
-                      disabled={historialDocentePage === 1}
-                      onClick={() =>
-                        setHistorialDocentePage(
-                          historialDocentePage - 1
-                        )
-                      }
-                    >
-                      ← Anterior
-                    </button>
-
-                    <span className="paginationInfo">
-                      Página {historialDocentePage} de {totalPaginasDocente || 1}
-                    </span>
-
-                    <button
-                      className="paginationBtn"
-                      disabled={
-                        historialDocentePage === totalPaginasDocente
-                      }
-                      onClick={() =>
-                        setHistorialDocentePage(
-                          historialDocentePage + 1
-                        )
-                      }
-                    >
-                      Siguiente →
-                    </button>
-
-                  </div>
-                </>
-              )}
+              <button
+                className="paginationBtn"
+                disabled={
+                  historialDocentePage === totalPaginasDocente
+                }
+                onClick={() =>
+                  setHistorialDocentePage(
+                    historialDocentePage + 1
+                  )
+                }
+              >
+                Siguiente →
+              </button>
 
             </div>
+          </>
+        )}
 
-          </div>
-        </div>
-      )}
+      </div>
+
+    </div>
+  </div>
+)}
 
       <div className="footergr">
         <Link to={user?.rol === 'secretaria' ? '/Secretaria' : '/docente'}>
