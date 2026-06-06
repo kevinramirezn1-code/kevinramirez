@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/static/css/main.65dc319b.css",
+    "main.js": "/static/js/main.d6c1472a.js",
+    "static/js/239.c5f68727.chunk.js": "/static/js/239.c5f68727.chunk.js",
+    "static/js/977.269a902f.chunk.js": "/static/js/977.269a902f.chunk.js",
+    "static/js/732.fda73a07.chunk.js": "/static/js/732.fda73a07.chunk.js",
+    "static/media/imagen_home.jpg": "/static/media/imagen_home.f0ec9982aa8835b19c22.jpg",
+    "static/media/salaReuniones.png": "/static/media/salaReuniones.65be43ae2466c9113854.png",
+    "static/media/facultad.png": "/static/media/facultad.07449141bc99a9f18932.png",
+    "static/media/logoUao.png": "/static/media/logoUao.97dc357cd6501ab925cb.png",
+    "static/media/avatar.png": "/static/media/avatar.5bf06071d25e970fc42f.png",
+    "static/media/calendario.png": "/static/media/calendario.3c26f47aab1dc264fd0e.png",
+    "static/media/agregar.png": "/static/media/agregar.eff8ae123bbabf64d7da.png",
+    "static/media/visible.png": "/static/media/visible.9d3e0a990c1f319951a0.png",
+    "static/media/privado.png": "/static/media/privado.54b3107d160578572bcc.png",
+    "index.html": "/index.html",
+    "main.65dc319b.css.map": "/static/css/main.65dc319b.css.map",
+    "main.d6c1472a.js.map": "/static/js/main.d6c1472a.js.map",
+    "239.c5f68727.chunk.js.map": "/static/js/239.c5f68727.chunk.js.map",
+    "977.269a902f.chunk.js.map": "/static/js/977.269a902f.chunk.js.map",
+    "732.fda73a07.chunk.js.map": "/static/js/732.fda73a07.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.65dc319b.css",
+    "static/js/main.d6c1472a.js"
+  ]
+}
