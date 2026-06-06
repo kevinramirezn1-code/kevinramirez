@@ -1,0 +1,227 @@
+/* ===== ESTILOS DEL NAVBAR ===== */
+.navbarGestion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 2rem;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+/* Contenedor del logo */
+.navbarLogoGestion {
+  display: flex;
+  align-items: center;
+}
+
+.logoGestion {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Lado derecho */
+.navbarRightGestion {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.userRole {
+  font-size: 1rem;
+  color: #2d3748;
+  font-weight: 500;
+  background: #f0f4f8;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.avatarContainer {
+  position: relative;
+}
+
+.avatarGestion {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatarGestion:hover {
+  transform: scale(1.05);
+  border-color: #999;
+}
+
+/* ===== ESTILOS DEL DROPDOWN ===== */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 350px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease-out;
+  z-index: 1001;
+}
+
+.dropdownMenu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 15px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.dropdownContent {
+  padding: 1rem;
+}
+
+.userInfoSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0.75rem;
+}
+
+.dropdownAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userEmailSection {
+  flex: 1;
+}
+
+.emailValue {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue';
+  font-size: 15px;
+  font-weight: 400;
+  color: #2e2e2e;
+}
+
+/* Sección de facultad */
+.dropdownFacultad {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 5px;
+  border-radius: 8px;
+}
+
+.facultadIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.facultadText {
+  font-size: 14px;
+  color: #2e2e2e;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Botón de cerrar sesión */
+.logoutButton {
+  width: 100%;
+  padding: 0.625rem;
+  background: #d6001c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1px;
+}
+
+/* Animación */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbarGestion {
+    padding: 0.6rem 1rem;
+  }
+  
+  .logoGestion {
+    height: 35px;
+  }
+  
+  .userRole {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+  }
+  
+  .avatarGestion {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .dropdownMenu {
+    width: 280px;
+  }
+  
+  .dropdownAvatar {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .emailValue {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .userRole {
+    display: none;
+  }
+  
+  .logoGestion {
+    height: 30px;
+  }
+  
+  .dropdownMenu {
+    width: 260px;
+    right: -10px;
+  }
+  
+  .userInfoSection {
+    gap: 0.75rem;
+  }
+  
+  .dropdownAvatar {
+    width: 38px;
+    height: 38px;
+  }
+}

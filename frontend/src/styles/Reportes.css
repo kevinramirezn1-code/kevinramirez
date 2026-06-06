@@ -1,0 +1,423 @@
+/* ===== RESET Y CONTENEDOR PRINCIPAL ===== */
+.reportesContainer *,
+.reportesContaine *::before,
+.reportesContainer *::after {
+  box-sizing: border-box;
+}
+
+.reportesContainer {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8edf8 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  margin-top: 60px;
+  padding: 0.8rem 2.5rem 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.titulo {
+  font-size: 2.6rem;
+  color: #1e3c72;
+  font-weight: 800;
+  margin: 20px 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.welcomeSection {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.linea {
+  width: 80px;
+  height: 4px;
+  margin: 0px auto;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #0075b1, #6c63ff);
+}
+
+/* ===== LAYOUT PRINCIPAL ===== */
+.layoutDosColumnas {
+  display: flex;
+  gap: 18px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ===== TABS VERTICALES ===== */
+.tabsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 200px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.tab {
+  padding: 0.9rem 1.2rem;
+  border: none;
+  border-radius: 14px;
+  background: white;
+  color: #1e3c72;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  text-align: left;
+  border-left: 4px solid transparent;
+}
+
+.tab:hover {
+  border-left: 4px solid #6c63ff;
+  transform: translateX(3px);
+  box-shadow: 0 4px 14px rgba(108,99,255,0.15);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #0075b1, #6c63ff);
+  color: white;
+  border-left: 4px solid rgba(255,255,255,0.4);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+  transform: translateX(3px);
+}
+
+/* ===== CARD DERECHA ===== */
+.reportesCard {
+  flex: 1;
+  background: white;
+  border-radius: 22px;
+  padding: 1.6rem 2rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+  max-height: 380px;
+}
+
+/* ===== FILTROS EN UNA SOLA FILA ===== */
+.reportesFiltros {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+  flex-shrink: 0;
+}
+
+.reportesFiltrosDos {
+  grid-template-columns: 1fr 1fr;
+}
+
+.campoFiltro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campoFiltro label {
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.campoFiltro input {
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s;
+  background: #f8fafc;
+  color: #1e293b;
+  width: 100%;
+}
+
+.campoFiltro input:focus {
+  border-color: #6c63ff;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+}
+
+/* ===== BOTONES ===== */
+.botonesAccion {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btnGenerar {
+  border: none;
+  padding: 0.75rem 1.8rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0075b1, #6c63ff);
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+}
+
+.btnGenerar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.35);
+}
+
+.btnGenerar:active {
+  transform: translateY(0);
+}
+
+.btnGenerar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnPDF {
+  padding: 0.75rem 1.8rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff4b4b, #d90429);
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+}
+
+.btnPDF:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(217,4,41,0.3);
+}
+
+.btnPDF:active {
+  transform: translateY(0);
+}
+
+/* ===== TABLA ===== */
+.tablaContainer {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+}
+
+.tablaContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tablaContainer::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.tablaContainer::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0075b1, #6c63ff);
+  border-radius: 10px;
+}
+
+.tablaReportes {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tablaReportes thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.tablaReportes th {
+  background: linear-gradient(135deg, #f0f4ff, #e8edf8);
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tablaReportes td {
+  padding: 0.85rem 1.2rem;
+  border-top: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.tablaReportes tbody tr:hover {
+  background: #f8faff;
+}
+
+.badgeHoras {
+  background: linear-gradient(135deg, #0075b1, #6c4cff);
+  color: white;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: inline-block;
+}
+
+/* ===== ESTADOS ===== */
+.sinDatos {
+  text-align: center;
+  padding: 3rem;
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.placeholderTab {
+  text-align: center;
+  padding: 5rem;
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+/* ===== FOOTER ===== */
+.footergr {
+  background: white;
+  box-shadow: 0 -4px 20px rgba(76, 0, 255, 0.08);
+  height: 58px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.devolvergr {
+  width: 32px;
+  height: auto;
+  margin-right: 40px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.devolvergr:hover {
+  transform: scale(1.1);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .reportesFiltros {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 1rem;
+  }
+
+  .layoutDosColumnas {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .tabsContainer {
+    flex-direction: row;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .tab:hover,
+  .tab.active {
+    transform: none;
+    border-left: none;
+    border-bottom: 3px solid white;
+  }
+
+  .reportesFiltros {
+    grid-template-columns: 1fr;
+  }
+
+  .titulo {
+    font-size: 2rem;
+  }
+}
+
+/* ===== PAGINACIÓN ===== */
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 8px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btnPagina {
+  min-width: 34px;
+  height: 34px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #1e3c72;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPagina:hover:not(:disabled) {
+  border-color: #6c63ff;
+  color: #6c63ff;
+  box-shadow: 0 2px 8px rgba(108,99,255,0.15);
+}
+
+.btnPagina.activo {
+  background: linear-gradient(135deg, #0075b1, #6c63ff);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+
+.btnPagina:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ===== HISTORIAL TABLAS ===== */
+.tablaSeccion {
+  margin-bottom: 20px;
+}
+
+.tituloTabla {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}

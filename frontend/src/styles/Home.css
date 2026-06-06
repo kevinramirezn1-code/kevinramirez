@@ -1,0 +1,59 @@
+/* contenedor principal */
+.homeContainer {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* sección principal */
+.homeContent {
+    height: 100vh;
+
+    background-image: url("../assets/images/imagen_home.jpg");
+    background-size: 100%;
+    background-position: bottom;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    position: relative; /* importante */
+}
+
+/* capa oscura */
+.homeContent::before {
+    content: "";
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0,0,0,0.5);
+}
+
+/* titulo */
+.homeTitle {
+    font-size: 80px;
+    color: white;
+    margin-bottom: 20px;
+
+    position: relative;
+    z-index: 2;
+}
+
+/* texto */
+.homeText {
+    font-size: 36px;
+    color: white;
+    max-width: 600px;
+    margin: auto;
+    line-height: 1.5;
+
+    position: relative;
+    z-index: 2;
+}
