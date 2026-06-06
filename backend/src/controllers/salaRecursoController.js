@@ -1,5 +1,5 @@
 const salaRecursoService = require('../service/salaRecursoService');
-const SalaRecursoDTO = require('../dtos/SalaRecursoDTO');
+const SalaRecursoDTO = require('../dtos/salaRecursoDTO');
 
 const listarPorSala = async (req, res, next) => {
   try {
